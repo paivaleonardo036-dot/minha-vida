@@ -53,7 +53,7 @@ input[type=checkbox]{width:28px;height:28px;accent-color:var(--c)}
 .total{margin-top:10px;padding:10px;border-radius:12px;background:var(--bg)}
 .num{width:110px}small{color:var(--mut)}
 </style></head>
-<body><div class="wrap" id="auth" style="padding-bottom:0"><div class="sync">v4 · conectando ao Firebase…</div></div><div class="wrap" id="app"></div>
+<body><div class="wrap" id="auth" style="padding-bottom:0"><div class="sync">v5 · conectando ao Firebase…</div></div><div class="wrap" id="app"></div>
 <script>
 const K='vida-org-v2',$=s=>document.querySelector(s),g=i=>$('#'+i).value.trim();
 const CO={home:{n:'Início',e:'🏠',c:'--home'},pp:{n:'Pessoal',e:'📝',c:'--pp'},ag:{n:'Agenda',e:'📅',c:'--ag'},cha:{n:'Mr.Matte',e:'🧉',c:'--cha'},lav:{n:'Lavanderia',e:'🧺',c:'--lav'},qd:{n:'Quadra Marketing',e:'📣',c:'--qd'},pes:{n:'Meu Dinheiro',e:'💳',c:'--pes'}};
@@ -77,10 +77,12 @@ let LAT=0,ref=null,pend=false,wt=0,syncTxt='💾 Salvo neste aparelho';
 try{LAT=+localStorage.getItem(K+'-at')||0}catch(e){}
 function setSync(t){syncTxt=t;const e=document.querySelector('#sync');if(e)e.textContent=t}
 function stash(){try{localStorage.setItem(K,JSON.stringify(S));localStorage.setItem(K+'-at',String(LAT))}catch(e){}}
-function cloudPush(){if(window.fbSave){setSync('⏳ Salvando…');window.fbSave(LAT,JSON.stringify(S))}}
+const snapJ=()=>JSON.stringify(window.sharedPend?Object.assign({},S,{pend:[]}):S);
+function cloudPush(){if(window.fbSave){setSync('⏳ Salvando…');window.fbSave(LAT,snapJ())}}
 function save(){LAT=Date.now();stash();cloudPush()}
-window.appApply=(json,at)=>{try{S=Object.assign(seed(),JSON.parse(json));LAT=+at||0;if(mig())save();else stash();render()}catch(e){}};
-window.appLocal=()=>({at:LAT,json:JSON.stringify(S)});
+window.appApply=(json,at)=>{try{const keep=window.sharedPend?S.pend:null;S=Object.assign(seed(),JSON.parse(json));if(keep)S.pend=keep;LAT=+at||0;if(mig())save();else stash();render()}catch(e){}};
+window.appLocal=()=>({at:LAT,json:snapJ()});
+window.appShared=l=>{S.pend=l;window.sharedPend=true;render()};window.appPend=()=>S.pend;window.appNames=()=>S.cli.map(c=>c.n);
 window.appSync=setSync;
 const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const today=()=>new Date().toLocaleDateString('sv-SE'),fd=d=>d.split('-').reverse().slice(0,2).join('/');
@@ -88,11 +90,12 @@ const m$=n=>(+n||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
 const sortT=(a,b)=>(a.d||'9')<(b.d||'9')?-1:1;
 const opts=a=>a.map(x=>`<option>${esc(x)}</option>`).join('');
 const go=t=>{tab=t;render()},sb=s=>{sub[tab]=s;render()};
-function A(k,o){S[k].push(Object.assign({id:uid()},o));save();render()}
-function D(k,id){if(!confirm('Apagar este item?'))return;S[k]=S[k].filter(x=>x.id!==id);save();render()}
+const SHR=()=>window.sharedPend&&window.fbPend;
+function A(k,o){const x=Object.assign({id:uid()},o);S[k].push(x);if(k==='pend'&&SHR())window.fbPend.set(x);else save();render()}
+function D(k,id){if(!confirm('Apagar este item?'))return;S[k]=S[k].filter(x=>x.id!==id);if(k==='pend'&&SHR())window.fbPend.del(id);else save();render()}
 const go2=(t,s)=>{tab=t;sub[t]=s;render()};
 const sortU=(a,b)=>(b.urg?1:0)-(a.urg?1:0)||sortT(a,b);
-function U(k,id,f,v){S[k].find(a=>a.id===id)[f]=v;save();render()}
+function U(k,id,f,v){const x=S[k].find(a=>a.id===id);x[f]=v;if(k==='pend'&&SHR())window.fbPend.set(x);else save();render()}
 function note(v){S.notes[tab]=v;save()}
 function shift(k,n){const d=cm[k];cm[k]=new Date(d.getFullYear(),d.getMonth()+n,1);render()}
 const inp=(id,ph,x='')=>`<input id="${id}" placeholder="${ph}" ${x}>`;
@@ -191,25 +194,37 @@ setTimeout(()=>{const a=document.getElementById('auth');if(a&&/conectando/.test(
 <script type="module">
 import{initializeApp}from"https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import{getAuth,onAuthStateChanged,signInWithEmailAndPassword,signOut}from"https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import{getFirestore,doc,onSnapshot,setDoc}from"https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-/* ====== COLE AQUI O SEU firebaseConfig (veja o LEIA-ME) ====== */
+import{getFirestore,doc,getDoc,onSnapshot,setDoc,deleteDoc,collection}from"https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+/* ====== SEU firebaseConfig ====== */
 const firebaseConfig={apiKey:"AIzaSyCkelAkEWCp2A_cCbD6Q95k0ZC2dLg3eCM",authDomain:"vida-do-leo.firebaseapp.com",projectId:"vida-do-leo",appId:"1:512063173608:web:3103e3950d9b1b34666a5d"};
-/* ============================================================== */
+/* ================================ */
 const A=document.getElementById('auth');
 if(firebaseConfig.apiKey.startsWith('COLE')){A.innerHTML='<div class="sync">⚙️ Firebase ainda não configurado: salvando só neste aparelho.</div>'}
 else{
 const app=initializeApp(firebaseConfig),auth=getAuth(app),db=getFirestore(app);
-let ref=null,unsub=null,tm=0,pend=false;
+let ref=null,unsub=null,unsub2=null,tm=0,pend=false,lastNames='',privReady=false,lastCol=null,migDone=false;
+const strip=p=>{const{id,...r}=p;return JSON.parse(JSON.stringify(r))};
+async function pushNames(){try{const n=window.appNames(),k=n.join('|');if(k!==lastNames){await setDoc(doc(db,'config','quadra'),{clientes:n});lastNames=k}}catch(e){}}
 window.fbSave=(at,json)=>{if(!ref)return;pend=true;clearTimeout(tm);
-tm=setTimeout(async()=>{try{await setDoc(ref,{json,at});pend=false;window.appSync('☁️ Salvo na nuvem')}catch(e){pend=false;window.appSync('⚠️ Não salvou na nuvem (fica neste aparelho)')}},700)};
+tm=setTimeout(async()=>{try{await setDoc(ref,{json,at});pend=false;window.appSync('☁️ Salvo na nuvem');pushNames()}catch(e){pend=false;window.appSync('⚠️ Não salvou na nuvem (fica neste aparelho)')}},700)};
+function applyCol(){if(!lastCol||!migDone)return;
+window.fbPend={set:p=>setDoc(doc(db,'demandas',String(p.id)),strip(p)).catch(()=>window.appSync('⚠️ Não salvou a demanda')),del:id=>deleteDoc(doc(db,'demandas',String(id))).catch(()=>window.appSync('⚠️ Não apagou a demanda'))};
+window.appShared(lastCol.docs.map(d=>Object.assign({},d.data(),{id:Number(d.id)})))}
+async function tryMig(){if(migDone||!privReady||!lastCol)return;
+try{const meta=doc(db,'config','meta'),m=await getDoc(meta);let n=0;
+if(!m.exists()){for(const p of window.appPend()){await setDoc(doc(db,'demandas',String(p.id)),strip(p));n++}await setDoc(meta,{migrated:true,at:Date.now()})}
+migDone=true;if(!n)applyCol();pushNames()}
+catch(e){window.appSync('⚠️ Não consegui ligar as demandas compartilhadas (confira as regras do Firestore)')}}
 function form(msg){A.innerHTML=`<div class="card" style="margin:14px auto 0;max-width:820px"><b>🔐 Entrar</b><div class="add" style="margin-top:8px"><input id="lgEmail" type="email" placeholder="Email" autocomplete="username"><input id="lgPass" type="password" placeholder="Senha" autocomplete="current-password"><button class="btn" id="lgGo" style="--c:#7c5cff">Entrar</button></div><div class="empty" id="lgMsg" style="margin-top:6px">${msg||''}</div></div>`;
 document.getElementById('lgGo').onclick=async()=>{try{await signInWithEmailAndPassword(auth,document.getElementById('lgEmail').value.trim(),document.getElementById('lgPass').value)}catch(e){document.getElementById('lgMsg').textContent='Email ou senha incorretos.'}}}
-onAuthStateChanged(auth,u=>{if(unsub){unsub();unsub=null}ref=null;
+onAuthStateChanged(auth,u=>{[unsub,unsub2].forEach(f=>f&&f());unsub=unsub2=null;ref=null;privReady=false;lastCol=null;migDone=false;window.fbPend=null;window.sharedPend=false;
 if(!u){form();window.appSync('💾 Só neste aparelho (entre para salvar na nuvem)');return}
 A.innerHTML=`<div class="sync">👤 ${u.email} · <a href="#" id="lgOut">Sair</a></div>`;document.getElementById('lgOut').onclick=e=>{e.preventDefault();signOut(auth)};
 ref=doc(db,'users',u.uid,'data','agenda');
-unsub=onSnapshot(ref,sn=>{if(pend)return;const d=sn.exists()?sn.data():null,L=window.appLocal();
-if(!d||!d.json||(+d.at||0)<L.at){window.fbSave(L.at,L.json);return}
-if(d.json!==L.json)window.appApply(d.json,d.at);window.appSync('☁️ Salvo na nuvem')},()=>window.appSync('⚠️ Nuvem indisponível (fica neste aparelho)'))})}
+unsub=onSnapshot(ref,sn=>{const done=()=>{privReady=true;tryMig()};if(pend){done();return}
+const d=sn.exists()?sn.data():null,L=window.appLocal();
+if(!d||!d.json||(+d.at||0)<L.at){window.fbSave(L.at,L.json);done();return}
+if(d.json!==L.json)window.appApply(d.json,d.at);window.appSync('☁️ Salvo na nuvem');done()},()=>window.appSync('⚠️ Nuvem indisponível (fica neste aparelho)'));
+unsub2=onSnapshot(collection(db,'demandas'),sn=>{lastCol=sn;if(migDone)applyCol();else tryMig()},()=>window.appSync('⚠️ Sem acesso às demandas compartilhadas (confira as regras)'))})}
 </script>
 </body></html>
