@@ -53,7 +53,7 @@ input[type=checkbox]{width:28px;height:28px;accent-color:var(--c)}
 .total{margin-top:10px;padding:10px;border-radius:12px;background:var(--bg)}
 .num{width:110px}small{color:var(--mut)}
 </style></head>
-<body><div class="wrap" id="auth" style="padding-bottom:0"><div class="sync">v5 · conectando ao Firebase…</div></div><div class="wrap" id="app"></div>
+<body><div class="wrap" id="auth" style="padding-bottom:0"><div class="sync">v6 · conectando ao Firebase…</div></div><div class="wrap" id="app"></div>
 <script>
 const K='vida-org-v2',$=s=>document.querySelector(s),g=i=>$('#'+i).value.trim();
 const CO={home:{n:'Início',e:'🏠',c:'--home'},pp:{n:'Pessoal',e:'📝',c:'--pp'},ag:{n:'Agenda',e:'📅',c:'--ag'},cha:{n:'Mr.Matte',e:'🧉',c:'--cha'},lav:{n:'Lavanderia',e:'🧺',c:'--lav'},qd:{n:'Quadra Marketing',e:'📣',c:'--qd'},pes:{n:'Meu Dinheiro',e:'💳',c:'--pes'}};
@@ -119,11 +119,12 @@ h+=`<h2>👥 Por cliente</h2><div class="card">${S.cli.filter(c=>!c.i).map(c=>{c
 h+=`<h2>📌 Custos fixos: ${m$(cf)}</h2><div class="card">${custoRows('f')}</div><h2>🎈 Custos flutuantes: ${m$(cx)}</h2><div class="card">${custoRows('x')}</div>`;
 h+=`<div class="card add">${inp('kn','Nome do custo')}<input id="kv" type="number" placeholder="Valor" class="num"><select id="kt"><option value="f">Fixo</option><option value="x">Flutuante</option></select><button class="btn" onclick="if(g('kn'))A('custos',{n:g('kn'),v:+g('kv'),t:$('#kt').value,o:''})">＋ Custo</button></div>`;
 return h+`<div class="card"><b>${sobra>=0?'🎉':'⚠️'} Operação (${m$(tot['Operação'])}) − custos (${m$(cf+cx)}) = ${m$(sobra)}</b></div>`}
+function shareBar(){const ok=window.sharedPend&&window.fbPend;return `<div class="card" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><span class="t">${ok?'✅ Ligadas à equipe: todos veem estas demandas':'⚠️ Ainda não ligadas à equipe'}</span><button class="mini" onclick="if(window.fbForce)fbForce();else alert('Entre com seu login primeiro.')">${ok?'🔄 Reenviar tudo':'📤 Enviar para a equipe'}</button></div>`}
 function addP(){if(!g('pt'))return;A('pend',{c:$('#pc').value,t:g('pt'),d:$('#pd').value,r:$('#pr').value,urg:$('#pu').checked,ok:false})}
 function pendV(){const P=S.pend.filter(p=>pf==='Todos'||p.r===pf).sort(sortU),T=today();
 const row=p=>`<div class="row ${p.urg&&!p.ok?'urg':''} ${p.ok?'done':''}"><input type="checkbox" ${p.ok?'checked':''} onchange="U('pend',${p.id},'ok',this.checked)"><span class="t"><b>${esc(p.c)}</b>: ${esc(p.t)}</span>${p.urg&&!p.ok?'<span class="tag hot">🔥 URGENTE</span>':''}<span class="tag">👤 ${esc(p.r)}</span>${p.d?`<span class="tag ${p.d<T&&!p.ok?'late':''}">📅 ${fd(p.d)}</span>`:''}${p.ok?'':`<button class="mini ${p.urg?'sel':''}" onclick="U('pend',${p.id},'urg',${!p.urg})">🔥</button>`}<button class="x" onclick="D('pend',${p.id})">🗑</button></div>`;
 const o=P.filter(p=>!p.ok),f=P.filter(p=>p.ok);
-return `<div class="card add"><select id="pc">${opts(['Geral',...S.cli.map(c=>c.n)])}</select>${inp('pt','Qual a demanda?','onkeydown="if(event.key===\'Enter\')addP()"')}<input id="pd" type="date"><select id="pr">${opts(R)}</select><label class="tag" style="display:flex;align-items:center;gap:6px"><input type="checkbox" id="pu"> 🔥 Urgente</label><button class="btn" onclick="addP()">＋ Adicionar</button></div>
+return `${shareBar()}<div class="card add"><select id="pc">${opts(['Geral',...S.cli.map(c=>c.n)])}</select>${inp('pt','Qual a demanda?','onkeydown="if(event.key===\'Enter\')addP()"')}<input id="pd" type="date"><select id="pr">${opts(R)}</select><label class="tag" style="display:flex;align-items:center;gap:6px"><input type="checkbox" id="pu"> 🔥 Urgente</label><button class="btn" onclick="addP()">＋ Adicionar</button></div>
 <div class="sub">${['Todos',...R].map(r=>`<button class="mini ${pf===r?'sel':''}" onclick="pf='${r}';render()">${r}</button>`).join('')}</div>
 <h2>⏳ Abertas (${o.length})</h2><div class="card">${o.length?o.map(row).join(''):'<div class="empty">Tudo em dia! 🌈</div>'}</div><h2>✅ Resolvidas (${f.length})</h2><div class="card">${f.map(row).join('')||'<div class="empty">Vazio.</div>'}</div>`}
 function gravV(){return `<div class="card add"><select id="gc">${opts(S.cli.map(c=>c.n))}</select><input id="gd" type="date"><input id="gh" type="time">${inp('gn','Local / observação')}<button class="btn" onclick="if(g('gd'))A('grav',{date:g('gd'),time:g('gh'),label:$('#gc').value+(g('gn')?' — '+g('gn'):'')})">＋ Gravação</button></div>`+cal('g',S.grav,'grav')}
@@ -151,7 +152,7 @@ return h}
 function pontV(){return `<div class="card add">${inp('tn','Qual conta?')}<input id="tv" type="number" class="num" placeholder="Valor"><button class="btn" onclick="if(g('tn'))A('pt',{n:g('tn'),v:+g('tv'),ok:false})">＋ Adicionar</button></div><div class="card">${S.pt.map(x=>`<div class="row ${x.ok?'done':''}"><input type="checkbox" ${x.ok?'checked':''} onchange="U('pt',${x.id},'ok',this.checked)"><span class="t">${esc(x.n)}</span><input class="num" type="number" value="${x.v}" onchange="U('pt',${x.id},'v',+this.value)"><button class="x" onclick="D('pt',${x.id})">🗑</button></div>`).join('')||'<div class="empty">Nenhuma dívida pontual. 🌈</div>'}</div>`}
 function entV(){const t=tt(S.en,e=>e.v*(e.q==null?1:e.q));return `<div class="card"><b>💵 Total por mês: ${m$(t)}</b></div><div class="card">${S.en.map(e=>`<div class="row"><span class="t"><b>${esc(e.n)}</b>${e.q!=null?'<br><small>valor por vez × vezes no mês</small>':''}</span><input class="num" type="number" value="${e.v}" onchange="U('en',${e.id},'v',+this.value)">${e.q!=null?`✕<input class="num" style="width:70px" type="number" value="${e.q}" onchange="U('en',${e.id},'q',+this.value)">`:''}<button class="x" onclick="D('en',${e.id})">🗑</button></div>`).join('')}</div><div class="card add">${inp('ann','Nova entrada')}<input id="avl" type="number" class="num" placeholder="Valor"><input id="aqt" type="number" style="width:90px" placeholder="Vezes"><button class="btn" onclick="if(g('ann'))A('en',Object.assign({n:g('ann'),v:+g('avl')},g('aqt')?{q:+g('aqt')}:{}))">＋ Entrada</button></div>`}
 function exportar(){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(S)],{type:'application/json'}));a.download='backup-minha-vida-'+today()+'.json';a.click()}
-function importar(){const i=document.createElement('input');i.type='file';i.accept='.json';i.onchange=()=>{const f=i.files[0];if(!f)return;f.text().then(t=>{try{const o=JSON.parse(t);if(!confirm('Substituir tudo pelo backup?'))return;S=Object.assign(seed(),o);save();render()}catch(e){alert('Arquivo inválido')}})};i.click()}
+function importar(){const i=document.createElement('input');i.type='file';i.accept='.json';i.onchange=()=>{const f=i.files[0];if(!f)return;f.text().then(t=>{try{const o=JSON.parse(t);if(!confirm('Substituir tudo pelo backup?'))return;S=Object.assign(seed(),o);if(window.sharedPend&&window.fbPend)S.pend.forEach(p=>window.fbPend.set(p));save();render()}catch(e){alert('Arquivo inválido')}})};i.click()}
 function mig(){let ch=false;
 if(!S.v4){S.v4=true;ch=true;
 if(!S.cli.some(c=>c.n==='Quadra'))S.cli.push({id:uid(),n:'Quadra',e:'Uniforme e demandas internas',v:0,d:0,g:'q',i:true});
@@ -207,14 +208,15 @@ const strip=p=>{const{id,...r}=p;return JSON.parse(JSON.stringify(r))};
 async function pushNames(){try{const n=window.appNames(),k=n.join('|');if(k!==lastNames){await setDoc(doc(db,'config','quadra'),{clientes:n});lastNames=k}}catch(e){}}
 window.fbSave=(at,json)=>{if(!ref)return;pend=true;clearTimeout(tm);
 tm=setTimeout(async()=>{try{await setDoc(ref,{json,at});pend=false;window.appSync('☁️ Salvo na nuvem');pushNames()}catch(e){pend=false;window.appSync('⚠️ Não salvou na nuvem (fica neste aparelho)')}},700)};
-function applyCol(){if(!lastCol||!migDone)return;
-window.fbPend={set:p=>setDoc(doc(db,'demandas',String(p.id)),strip(p)).catch(()=>window.appSync('⚠️ Não salvou a demanda')),del:id=>deleteDoc(doc(db,'demandas',String(id))).catch(()=>window.appSync('⚠️ Não apagou a demanda'))};
+function mkApi(){window.fbPend={set:p=>setDoc(doc(db,'demandas',String(p.id)),strip(p)).catch(()=>window.appSync('⚠️ Não salvou a demanda')),del:id=>deleteDoc(doc(db,'demandas',String(id))).catch(()=>window.appSync('⚠️ Não apagou a demanda'))}}
+function applyCol(){if(!lastCol||!migDone)return;mkApi();
 window.appShared(lastCol.docs.map(d=>Object.assign({},d.data(),{id:Number(d.id)})))}
 async function tryMig(){if(migDone||!privReady||!lastCol)return;
 try{const meta=doc(db,'config','meta'),m=await getDoc(meta);let n=0;
-if(!m.exists()){for(const p of window.appPend()){await setDoc(doc(db,'demandas',String(p.id)),strip(p));n++}await setDoc(meta,{migrated:true,at:Date.now()})}
+if(!m.exists()||(lastCol.empty&&window.appPend().length>0)){for(const p of window.appPend()){await setDoc(doc(db,'demandas',String(p.id)),strip(p));n++}if(!m.exists())await setDoc(meta,{migrated:true,at:Date.now()})}
 migDone=true;if(!n)applyCol();pushNames()}
-catch(e){window.appSync('⚠️ Não consegui ligar as demandas compartilhadas (confira as regras do Firestore)')}}
+catch(e){window.appSync('⚠️ Demandas compartilhadas: '+(e.code||e.message))}}
+window.fbForce=async()=>{try{if(!ref)throw{code:'sem-login'};const L=window.appPend();for(const p of L)await setDoc(doc(db,'demandas',String(p.id)),strip(p));await setDoc(doc(db,'config','meta'),{migrated:true,at:Date.now()});migDone=true;mkApi();await pushNames();window.appSync('☁️ '+L.length+' demanda(s) enviada(s) para a equipe')}catch(e){window.appSync('⚠️ Não enviou: '+(e.code||e.message))}};
 function form(msg){A.innerHTML=`<div class="card" style="margin:14px auto 0;max-width:820px"><b>🔐 Entrar</b><div class="add" style="margin-top:8px"><input id="lgEmail" type="email" placeholder="Email" autocomplete="username"><input id="lgPass" type="password" placeholder="Senha" autocomplete="current-password"><button class="btn" id="lgGo" style="--c:#7c5cff">Entrar</button></div><div class="empty" id="lgMsg" style="margin-top:6px">${msg||''}</div></div>`;
 document.getElementById('lgGo').onclick=async()=>{try{await signInWithEmailAndPassword(auth,document.getElementById('lgEmail').value.trim(),document.getElementById('lgPass').value)}catch(e){document.getElementById('lgMsg').textContent='Email ou senha incorretos.'}}}
 onAuthStateChanged(auth,u=>{[unsub,unsub2].forEach(f=>f&&f());unsub=unsub2=null;ref=null;privReady=false;lastCol=null;migDone=false;window.fbPend=null;window.sharedPend=false;
@@ -225,6 +227,6 @@ unsub=onSnapshot(ref,sn=>{const done=()=>{privReady=true;tryMig()};if(pend){done
 const d=sn.exists()?sn.data():null,L=window.appLocal();
 if(!d||!d.json||(+d.at||0)<L.at){window.fbSave(L.at,L.json);done();return}
 if(d.json!==L.json)window.appApply(d.json,d.at);window.appSync('☁️ Salvo na nuvem');done()},()=>window.appSync('⚠️ Nuvem indisponível (fica neste aparelho)'));
-unsub2=onSnapshot(collection(db,'demandas'),sn=>{lastCol=sn;if(migDone)applyCol();else tryMig()},()=>window.appSync('⚠️ Sem acesso às demandas compartilhadas (confira as regras)'))})}
+unsub2=onSnapshot(collection(db,'demandas'),sn=>{lastCol=sn;if(migDone)applyCol();else tryMig()},e=>window.appSync('⚠️ Sem acesso às demandas compartilhadas: '+(e.code||'')))})}
 </script>
 </body></html>
