@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html lang="pt-BR"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Quadra System</title>
+<title>VIDA DO LEO</title>
 <link rel="icon" href="logo.png"><link rel="apple-touch-icon" href="logo.png">
-<meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Quadra System">
+<meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="VIDA DO LEO">
 <style>
 :root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);--bg:#fff8ec;--card:#fff;--ink:#2b2b3a;--mut:#75758a;--line:#eadfc8;--home:#7c5cff;--cha:#2fa866;--lav:#2b8cff;--qd:#c9e723;--mc:#ff8c42;--pes:#f0a020;--pp:#14b8a6;--ag:#9b59b6}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#1c1b26;--card:#2a2938;--ink:#f4f1ff;--mut:#a9a6c2;--line:#3d3b52}}
@@ -73,7 +73,7 @@ const MES=['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto
 const C=(n,e,v,d,sp,gr)=>({id:uid(),n,e,v,d,sp,g:gr||'q'});
 function uid(){return Date.now()*1000+Math.floor(Math.random()*1000)}
 const F=(n,v,f,pg)=>({id:uid(),n,v,f,pg:''});
-const seed=()=>({tasks:[],notes:{},pend:[],grav:[],est:[],ev:[],comp:[],pp:[],agp:[],merc:[],lpen:[],lcomp:[],cins:[],ceq:[],
+const seed=()=>({tasks:[],notes:{},pend:[],grav:[],est:[],ev:[],comp:[],pp:[],agp:[],merc:[],mkt:[],fei:[],lpen:[],lcomp:[],cins:[],ceq:[],
 fx:[F('Condomínio',650),F('Luz',450),F('Academia',180),F('Celular (plano)',125)],
 pc:[F('Aliança',320,3),F('Celular',234,6),F('IPTU',237,1),F('IPVA Guiguiba',300,6),F('Drone',360,8),F('TV',607,4)],
 pt:[{id:uid(),n:'Topcell',v:150,ok:false}],
@@ -92,7 +92,7 @@ function cloudPush(){if(window.fbSave){setSync('⏳ Salvando…');window.fbSave(
 function save(){LAT=Date.now();stash();cloudPush()}
 window.appApply=(json,at)=>{try{const keep=window.sharedPend?S.pend:null;S=Object.assign(seed(),JSON.parse(json));if(keep)S.pend=keep;LAT=+at||0;if(mig())save();else stash();render()}catch(e){}};
 window.appLocal=()=>({at:LAT,json:snapJ()});
-window.appShared=l=>{S.pend=l;window.sharedPend=true;render()};window.appPend=()=>S.pend;window.appNames=()=>S.cli.map(c=>c.n);window.appVideos=()=>{const o={};S.cli.forEach(c=>{const m=/(\d+)\s*(v[ií]deos?|reels?)/i.exec(c.e||'');if(m)o[c.n]=+m[1]});return o};window.appGrav=()=>S.grav;window.appClearGrav=()=>{S.grav=[];save()};
+window.appShared=l=>{S.pend=l;window.sharedPend=true;render()};window.appPend=()=>S.pend;window.appNames=()=>S.cli.filter(c=>c.g!=='sub').map(c=>c.n);window.appVideos=()=>{const o={};S.cli.filter(c=>c.g!=='sub').forEach(c=>{const m=/(\d+)\s*(v[ií]deos?|reels?)/i.exec(c.e||'');if(m)o[c.n]=+m[1]});return o};window.appGrav=()=>S.grav;window.appClearGrav=()=>{S.grav=[];save()};
 window.appSync=setSync;
 const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const today=()=>new Date().toLocaleDateString('sv-SE'),fd=d=>d.split('-').reverse().slice(0,2).join('/');
@@ -102,7 +102,7 @@ const opts=a=>a.map(x=>`<option>${esc(x)}</option>`).join('');
 const go=t=>{tab=t;render()},sb=s=>{sub[tab]=s;render()};
 const SHR=()=>window.sharedPend&&window.fbPend;
 function A(k,o){const x=Object.assign({id:uid()},o);S[k].push(x);if(k==='pend'&&SHR())window.fbPend.set(x);else save();render()}
-function D(k,id){if(!confirm('Apagar este item?'))return;S[k]=S[k].filter(x=>x.id!==id);if(k==='pend'&&SHR())window.fbPend.del(id);else save();render()}
+function D(k,id){if(k!=='mkt'&&k!=='fei'&&!confirm('Apagar este item?'))return;S[k]=S[k].filter(x=>x.id!==id);if(k==='pend'&&SHR())window.fbPend.del(id);else save();render()}
 const go2=(t,s)=>{tab=t;sub[t]=s;render()};
 const sortU=(a,b)=>(b.urg?1:0)-(a.urg?1:0)||sortT(a,b);
 function U(k,id,f,v){if(f==='ok'&&v===true)celebrate(window.event);const x=S[k].find(a=>a.id===id);x[f]=v;if(k==='pend'&&SHR())window.fbPend.set(x);else save();render()}
@@ -113,7 +113,7 @@ function cal(k,ev,del){const d=cm[k],y=d.getFullYear(),m=d.getMonth(),f=new Date
 let h=['D','S','T','Q','Q','S','S'].map(x=>`<b class="c0">${x}</b>`).join('')+'<i></i>'.repeat(f);
 for(let i=1;i<=n;i++){const ds=ms+'-'+String(i).padStart(2,'0'),c=ev.filter(e=>e.date===ds).length;h+=`<div class="cd ${ds===today()?'hj':''}">${i}${c?`<span class="dot">${c}</span>`:''}</div>`}
 const L=ev.filter(e=>e.date.startsWith(ms)).sort((a,b)=>(a.date+(a.time||''))<(b.date+(b.time||''))?-1:1);
-return `<div class="card"><div class="cnav"><button class="mini" onclick="shift('${k}',-1)">◀</button><b>${MES[m]} ${y}</b><button class="mini" onclick="shift('${k}',1)">▶</button></div><div class="grid">${h}</div></div><div class="card">${L.length?L.map(e=>`<div class="row"><span class="tag">${fd(e.date)} ${e.time||''}</span><span class="t">${esc(e.label)}</span>${del?`<button class="x" onclick="D('${del}',${e.id})">🗑</button>`:''}</div>`).join(''):'<div class="empty">Nada neste mês.</div>'}</div>`}
+return `<div class="card"><div class="cnav"><button class="mini" onclick="shift('${k}',-1)">◀</button><b>${MES[m]} ${y}</b><button class="mini" onclick="shift('${k}',1)">▶</button></div><div class="grid">${h}</div></div><div class="card">${L.length?L.map(e=>`<div class="row"><span class="tag">${fd(e.date)} ${e.time||''}</span><span class="t">${esc(e.label)}</span>${del&&!e.ro?`<button class="x" onclick="D('${del}',${e.id})">🗑</button>`:''}</div>`).join(''):'<div class="empty">Nada neste mês.</div>'}</div>`}
 /* QUADRA */
 function cliV(){let h='';
 [['q','📁 Clientes Quadra'],['sub','📁 Clientes SUB']].forEach(([gr,t])=>{const L=S.cli.filter(c=>c.g===gr);
@@ -157,11 +157,16 @@ function payPc(id,ck){if(ck)celebrate(window.event,'💳 Parcela paga!');const x
 function calcPes(){const M=ym(),fx=S.fx,pc=S.pc.filter(x=>x.f>0||x.pg===M);
 const ent=tt(S.en,e=>e.v*(e.q==null?1:e.q)),cont=tt(fx,x=>x.v)+tt(pc,x=>x.v),pago=tt(fx.filter(x=>x.pg===M),x=>x.v)+tt(pc.filter(x=>x.pg===M),x=>x.v),pont=tt(S.pt.filter(x=>!x.ok),x=>x.v);
 return {M,pc,ent,cont,pago,pont,sobra:ent-cont-pont,falta:cont-pago+pont}}
+function venc(x,M){if(!x.dia)return '<small>sem vencimento</small>';const last=new Date(+M.slice(0,4),+M.slice(5),0).getDate(),dd=Math.min(x.dia,last),diff=dd-(+today().slice(8));
+if(x.pg===M)return `<small>✔ pago · venc. dia ${dd}</small>`;
+return diff<0?`<span class="tag late">venceu dia ${dd}</span>`:diff===0?'<span class="tag hot">vence HOJE</span>':diff<=3?`<span class="tag hot">vence em ${diff} dia(s) · dia ${dd}</span>`:`<small>vence dia ${dd}</small>`}
+function billEvents(d){const y=d.getFullYear(),m=d.getMonth(),last=new Date(y,m+1,0).getDate(),ms=y+'-'+String(m+1).padStart(2,'0');
+return S.fx.filter(x=>x.dia).map(x=>({date:ms+'-'+String(Math.min(+x.dia,last)).padStart(2,'0'),label:'💸 '+x.n+' · '+m$(x.v)+(ms===ym()&&x.pg===ms?' ✔':''),ro:true}))}
 function mesV(){const c=calcPes(),M=c.M,q=S.pc.filter(x=>x.f<=0&&x.pg!==M);
-let h=`<div class="card"><b>${MES[+M.slice(5)-1]} ${M.slice(0,4)}</b><div class="kpi" style="margin-top:8px"><div>💵 Entra<b>${m$(c.ent)}</b></div><div>🧾 Contas<b>${m$(c.cont)}</b></div><div>⏳ Falta pagar<b>${m$(c.falta)}</b></div><div>${c.sobra>=0?'🎉':'⚠️'} Sobra<b style="color:${c.sobra<0?'#e5484d':'inherit'}">${m$(c.sobra)}</b></div></div></div>`;
-h+=`<h2>🏠 Contas fixas</h2><div class="card">${S.fx.map(x=>`<div class="row ${x.pg===M?'done':''}"><input type="checkbox" ${x.pg===M?'checked':''} onchange="U('fx',${x.id},'pg',this.checked?ym():'')"><span class="t">${esc(x.n)}</span><input class="num" type="number" value="${x.v}" onchange="U('fx',${x.id},'v',+this.value)"><button class="x" onclick="D('fx',${x.id})">🗑</button></div>`).join('')}
+let h=`<div class="card"><b>${MES[+M.slice(5)-1]} ${M.slice(0,4)}</b> <small>· os checks zeram sozinhos todo dia 1º</small><div class="kpi" style="margin-top:8px"><div>💵 Entra<b>${m$(c.ent)}</b></div><div>🧾 Contas<b>${m$(c.cont)}</b></div><div>✅ Já paguei<b>${m$(c.pago)}</b></div><div>⏳ Falta pagar<b>${m$(c.falta)}</b></div><div>${c.sobra>=0?'🎉':'⚠️'} Sobra<b style="color:${c.sobra<0?'#e5484d':'inherit'}">${m$(c.sobra)}</b></div></div></div>`;
+h+=`<h2>🏠 Contas fixas</h2><div class="card">${S.fx.slice().sort((a,b)=>(a.dia||99)-(b.dia||99)).map(x=>`<div class="row ${x.pg===M?'done':''}"><input type="checkbox" ${x.pg===M?'checked':''} onchange="U('fx',${x.id},'pg',this.checked?ym():'')"><span class="t">${esc(x.n)}<br>${venc(x,M)}</span><input class="num" type="number" value="${x.v}" onchange="U('fx',${x.id},'v',+this.value)"><input class="num" style="width:64px" type="number" min="1" max="31" placeholder="dia" value="${x.dia||''}" onchange="U('fx',${x.id},'dia',+this.value)"><button class="x" onclick="D('fx',${x.id})">🗑</button></div>`).join('')}
 <div class="total">🧾 Total das contas fixas: <b>${m$(tt(S.fx,x=>x.v))}</b></div>
-<div class="add" style="margin-top:8px">${inp('fnm','Nova conta fixa')}<input id="fvl" type="number" class="num" placeholder="Valor"><button class="btn" onclick="if(g('fnm'))A('fx',{n:g('fnm'),v:+g('fvl'),pg:''})">＋</button></div></div>`;
+<div class="add" style="margin-top:8px">${inp('fnm','Nova conta fixa')}<input id="fvl" type="number" class="num" placeholder="Valor"><input id="fdi" type="number" min="1" max="31" style="width:84px" placeholder="Dia venc."><button class="btn" onclick="if(g('fnm'))A('fx',{n:g('fnm'),v:+g('fvl'),dia:+g('fdi')||0,pg:''})">＋</button></div></div>`;
 h+=`<h2>💳 Parcelas</h2><div class="card">${c.pc.map(x=>`<div class="row ${x.pg===M?'done':''}"><input type="checkbox" ${x.pg===M?'checked':''} onchange="payPc(${x.id},this.checked)"><span class="t">${esc(x.n)}<br><small>${x.f>0?'faltam '+x.f:'🎉 última paga!'}</small></span><input class="num" type="number" value="${x.v}" onchange="U('pc',${x.id},'v',+this.value)"><button class="x" onclick="D('pc',${x.id})">🗑</button></div>`).join('')||'<div class="empty">Sem parcelas.</div>'}
 ${q.length?`<small>🎉 Quitadas: ${q.map(x=>esc(x.n)).join(', ')}</small>`:''}
 <div class="total">💳 Parcelas deste mês: <b>${m$(tt(c.pc,x=>x.v))}</b><br>📉 Ainda devo no total: <b>${m$(tt(S.pc,x=>x.v*x.f))}</b> <small>(${tt(S.pc,x=>x.f)} parcelas restantes)</small></div>
@@ -181,13 +186,16 @@ if(!S.cli.some(c=>c.n==='Quadra'))S.cli.push({id:uid(),n:'Quadra',e:'Uniforme e 
 if(!S.pend.some(p=>p.c==='Quadra'&&p.t==='Criar uniforme'))S.pend.push({id:uid(),c:'Quadra',t:'Criar uniforme',d:'',r:'Eu',urg:false,ok:false});
 if(S.comp&&S.comp.length&&!S.cins.length){S.cins=S.comp.map(x=>({id:x.id,t:x.n,d:'',ok:!!x.ok}));S.comp=[]}
 if(S.tasks&&S.tasks.length&&!S.lpen.length){S.lpen=S.tasks.map(x=>({id:x.id,t:x.t,d:x.d||'',ok:x.s===2}));S.tasks=[]}}
+if(!S.v5){S.v5=true;ch=true;if(S.merc&&S.merc.length&&!S.mkt.length){S.mkt=S.merc.map(x=>({id:x.id,t:x.t}));S.merc=[]}}
+if(!S.v6){S.v6=true;ch=true;if(!S.en.some(e=>/marcelo/i.test(e.n)))S.en.push({id:uid(),n:'Contrato Marcelo Quorve',v:1000})}
 return ch}
 function addChk(col,dt){const t=g('ck');if(!t)return;A(col,{t,d:dt?g('ckd'):'',ok:false})}
 function chk(col,ph,dt){const P=S[col].slice().sort(sortT),T=today(),o=P.filter(p=>!p.ok),f=P.filter(p=>p.ok),ac=`addChk('${col}',${dt})`;
 const row=p=>`<div class="row ${p.ok?'done':''}"><input type="checkbox" ${p.ok?'checked':''} onchange="U('${col}',${p.id},'ok',this.checked)"><span class="t">${esc(p.t)}</span>${p.d?`<span class="tag ${p.d<T&&!p.ok?'late':''}">📅 ${fd(p.d)}</span>`:''}<button class="x" onclick="D('${col}',${p.id})">🗑</button></div>`;
 return `<div class="card add"><input id="ck" placeholder="${ph}" style="flex:1 1 200px" onkeydown="if(event.key==='Enter')${ac}">${dt?'<input id="ckd" type="date">':''}<button class="btn" onclick="${ac}">＋ Adicionar</button></div><h2>⏳ Abertas (${o.length})</h2><div class="card">${o.map(row).join('')||'<div class="empty">Tudo em dia! 🌈</div>'}</div><h2>✅ Feitas (${f.length})</h2><div class="card">${f.map(row).join('')||'<div class="empty">Vazio.</div>'}</div>`}
-function mercV(){return chk('merc','Item do mercado (ex: arroz 5kg)',0)+`<div class="sync"><button class="mini" onclick="S.merc=S.merc.filter(x=>!x.ok);save();render()">🧹 Limpar comprados</button></div>`}
-function agV(){return `<div class="card add">${inp('agt','Compromisso')}<input id="agd" type="date"><input id="agh" type="time"><button class="btn" onclick="if(g('agt')&&g('agd'))A('agp',{date:g('agd'),time:g('agh'),label:g('agt')})">＋ Adicionar</button></div>`+cal('p',S.agp,'agp')}
+function addM(col){const t=g('mi_'+col);if(!t)return;A(col,{t})}
+function mercV(){const lst=(col,t,ph)=>`<h2>${t}</h2><div class="card add"><input id="mi_${col}" placeholder="${ph}" style="flex:1 1 180px" onkeydown="if(event.key==='Enter')addM('${col}')"><button class="btn" onclick="addM('${col}')">＋ Adicionar</button></div><div class="card">${S[col].map(x=>`<div class="row"><span class="t">${esc(x.t)}</span><button class="mini" onclick="D('${col}',${x.id})">🗑</button></div>`).join('')||'<div class="empty">Lista vazia.</div>'}</div>`;return lst('mkt','🛒 Compras mercado','Item do mercado')+lst('fei','🥬 Compras feira','Item da feira')}
+function agV(){return `<div class="card add">${inp('agt','Compromisso')}<input id="agd" type="date"><input id="agh" type="time"><button class="btn" onclick="if(g('agt')&&g('agd'))A('agp',{date:g('agd'),time:g('agh'),label:g('agt')})">＋ Adicionar</button></div>`+cal('p',S.agp.concat(billEvents(cm.p)),'agp')}
 /* LAVANDERIA */
 function taskRow(x){const late=x.d&&x.d<today()&&x.s<2,b=x.s===0?`<button class="mini" onclick="U('tasks',${x.id},'s',1)">▶ Começar</button>`:x.s===1?`<button class="mini" onclick="U('tasks',${x.id},'s',2)">✔ Concluir</button>`:`<button class="mini" onclick="U('tasks',${x.id},'s',0)">↩ Reabrir</button>`;
 return `<div class="row ${x.s===2?'done':''}"><span class="t">${esc(x.t)}</span>${x.d?`<span class="tag ${late?'late':''}">📅 ${fd(x.d)}</span>`:''}${b}<button class="x" onclick="D('tasks',${x.id})">🗑</button></div>`}
@@ -201,7 +209,7 @@ const nx=S.agp.filter(e=>e.date>=T).sort((a,b)=>(a.date+(a.time||''))<(b.date+(b
 const card=(k,cls,t,info,fn)=>`<button class="big ${cls}" style="--c:var(${CO[k].c})" onclick="${fn||`go('${k}')`}"><b>${t}</b><span>${info}</span></button>`;
 let h='<h1>Oi! O que vamos organizar hoje? 👋</h1>';
 h+=card('qd','lg','🔥 Demandas da Quadra',`${po.length} aberta(s)${urg?` · 🔥 ${urg} urgente(s)`:''}${late?` · ⚠️ ${late} atrasada(s)`:''}`,"go2('qd','pen')");
-h+=`<div class="grid2">${card('pp','','📝 Pendências pessoais',`${pp.length} aberta(s)`)}${card('ag','','📅 Minha agenda',nx?`${fd(nx.date)} ${nx.time||''} · ${esc(nx.label)}`:'Nenhum compromisso')}${card('merc','','🛒 Mercado',`${S.merc.filter(x=>!x.ok).length} item(ns)`)}</div><h2>🏢 Empresas e dinheiro</h2>`;
+h+=`<div class="grid2">${card('pp','','📝 Pendências pessoais',`${pp.length} aberta(s)`)}${card('ag','','📅 Minha agenda',nx?`${fd(nx.date)} ${nx.time||''} · ${esc(nx.label)}`:'Nenhum compromisso')}${card('merc','','🛒 Mercado',`${S.mkt.length+S.fei.length} item(ns)`)}</div><h2>🏢 Empresas e dinheiro</h2>`;
 h+=card('qd','lg',`${CO.qd.e} ${CO.qd.n}`,`${po.length} demanda(s) aberta(s)`);
 h+=card('cha','',`${CO.cha.e} ${CO.cha.n}`,`${low} item(ns) acabando · ${ins} na lista de compras`);
 h+=card('pes','',`${CO.pes.e} ${CO.pes.n}`,`falta pagar ${m$(c.falta)} · sobra ${m$(c.sobra)}`);
@@ -211,7 +219,7 @@ h+=`<h2>⏰ Para hoje, atrasados e urgentes</h2><div class="card">${ah.map(x=>`<
 function render(){const y=scrollY,k=tab;let body;
 if(k==='home')body=home();else{const s=sub[k];const V={cli:cliV,fin:finV,pen:pendV,est:estV,ev:evV,cins:()=>chk('cins','Insumo para comprar',0),ceq:()=>chk('ceq','Equipamento para comprar',0),lpen:()=>chk('lpen','O que precisa ser feito?',1),lcomp:()=>chk('lcomp','O que comprar?',0),mes:mesV,pont:pontV,ent:entV};
 body=`<h1 style="${k==='qd'?'':`color:var(${CO[k].c})`}">${CO[k].e} ${CO[k].n}</h1>${k==='qd'?'<a class="tag" href="equipe.html" target="_blank" style="display:inline-block;margin-bottom:8px">🎬 Gravações e entregas: abrir a página da equipe</a>':''}`+(SUBS[k]?`<div class="sub">${SUBS[k].map(([i,n])=>`<button class="mini ${s===i?'sel':''}" onclick="sb('${i}')">${n}</button>`).join('')}</div>${V[s]()}`:(k==='pp'?chk('pp','O que preciso resolver?',1):k==='merc'?mercV():agV()))}
-$('#app').innerHTML=`<div style="--c:var(${CO[k].c});--on:${k==='qd'?'#0a0a0a':'#fff'}"><div class="brand"><img src="${LOGO}" alt=""><b>Quadra System</b></div><div class="sync" id="sync">${syncTxt}</div><div class="tabs">${Object.entries(CO).map(([i,v])=>`<button class="tab ${i===k?'on':''} ${i==='qd'?'lg':i==='lav'?'sm':''}" style="--c:var(${v.c})${i==='qd'?';--on:#0a0a0a':''}" onclick="go('${i}')">${v.e} ${v.n}</button>`).join('')}</div>${body}<div class="sync"><button class="mini" onclick="exportar()">⬇ Backup</button> <button class="mini" onclick="importar()">⬆ Restaurar</button></div></div>`;scrollTo(0,y)}
+$('#app').innerHTML=`<div style="--c:var(${CO[k].c});--on:${k==='qd'?'#0a0a0a':'#fff'}"><div class="brand"><img src="${LOGO}" alt=""><b>VIDA DO LEO</b></div><div class="sync" id="sync">${syncTxt}</div><div class="tabs">${Object.entries(CO).map(([i,v])=>`<button class="tab ${i===k?'on':''} ${i==='qd'?'lg':i==='lav'?'sm':''}" style="--c:var(${v.c})${i==='qd'?';--on:#0a0a0a':''}" onclick="go('${i}')">${v.e} ${v.n}</button>`).join('')}</div>${body}<div class="sync"><button class="mini" onclick="exportar()">⬇ Backup</button> <button class="mini" onclick="importar()">⬆ Restaurar</button></div></div>`;scrollTo(0,y)}
 render();
 setTimeout(()=>{const a=document.getElementById('auth');if(a&&/conectando/.test(a.textContent))a.innerHTML='<div class="sync">⚠️ Não consegui carregar o Firebase. Verifique a internet ou desligue bloqueadores de conteúdo.</div>'},6000);
 </script>
