@@ -169,7 +169,7 @@ const R=[['depois\\s+de\\s+amanh[aã]',()=>addDy(T0,2)],['amanh[aã]',()=>addDy(
 ['(\\d{1,2})\\/(\\d{1,2})(?:\\/(\\d{2,4}))?',m=>{let y=m[4]?+m[4]:T0.getFullYear();if(y<100)y+=2000;const x=new Date(y,+m[3]-1,+m[2],12);if(!m[4]&&x<addDy(T0,-60))x.setFullYear(y+1);return x}],
 ['(\\d{1,2})\\s+de\\s+('+MS+')',m=>{const x=new Date(T0.getFullYear(),MES.map(nrm).indexOf(nrm(m[3])),+m[2],12);if(x<addDy(T0,-60))x.setFullYear(x.getFullYear()+1);return x}],
 ['dia\\s+(\\d{1,2})',m=>{const x=new Date(T0.getFullYear(),T0.getMonth(),+m[2],12);if(+m[2]<T0.getDate())x.setMonth(x.getMonth()+1);return x}],
-['(?:(pr[oó]xim[ao])\\s+)?(segunda|ter[cç]a|quarta|quinta|sexta|s[aá]bado|domingo)(?:-?feira)?(\\s+(?:que\\s+vem|da\\s+(?:semana\\s+que\\s+vem|pr[oó]xima\\s+semana)))?',m=>{const ix=WDS.indexOf(nrm(m[3]).slice(0,3));if(m[4]&&/semana/i.test(m[4]))return addDy(nextMon(),(ix+6)%7);let df=(ix-T0.getDay()+7)%7;if(!df&&(m[2]||m[4]))df=7;return addDy(T0,df)}],
+['(?:(pr[oó]xim[ao])\\s+)?(segunda|ter[cç]a|quarta|quinta|sexta|s[aá]bado|domingo)(?:-?feira)?(\\s+(?:que\\s+vem|da\\s+(?:semana\\s+que\\s+vem|pr[oó]xima\\s+semana)))?',m=>{const ix=WDS.indexOf(nrm(m[3]).slice(0,3));if(m[4]&&/semana/i.test(m[4]))return addDy(nextMon(),(ix+6)%7);let df=(ix-T0.getDay()+7)%7;if(!df)df=7;return addDy(T0,df)}],
 ['(?:em|daqui\\s+a)\\s+(\\d+)\\s+dias?',m=>addDy(T0,+m[2])],['semana\\s+que\\s+vem|pr[oó]xima\\s+semana',()=>nextMon()],
 ['(?:fim|final)\\s+d[oe]\\s+m[eê]s',()=>new Date(T0.getFullYear(),T0.getMonth()+1,0,12)]];
 for(const[p,f]of R){const re=RX(DPRE+'(?:'+p+')');const m=s.match(re);if(m){const x=f(m);if(x&&!isNaN(x)){d=x;s=s.replace(re,'$1 ');break}}}
