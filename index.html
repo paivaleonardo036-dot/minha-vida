@@ -267,7 +267,8 @@ const st=p=>{const s=JN(T),m=new RegExp('^(?:'+p+')(?= |$)').exec(s);if(!m)retur
 if(st('(?:marcar|marca|marque) como (?:feito|feita|concluido|concluida|pago|paga)|conclui|concluir|concluido|concluida|conclua|finaliza|finalizar|finalizei|terminei|resolvi|resolver|feito|feita|fiz|paguei|pago|da baixa|dar baixa|baixa|check|ticar|ticar a|tica'))return {k:'done',q:jTxt(T)};
 if(st('(?:marcar |marca |agendar |agenda |nova |uma )?gravacao|gravacoes'))return {k:'grav',T};
 if(st('(?:pendencia|demanda|tarefa) (?:da|na|pra|para a) quadra|demandas?|quadra'))return {k:'pend',T};
-if(st('(?:pendencia|tarefa|lembrete) pessoal|pessoal|pendencia|lembrete|me lembra de|me lembrar de|lembrar de|lembra de|lembrar|tarefa'))return {k:'pp',T};
+if(st('(?:pendencia|tarefa|lembrete) pessoal|pessoal|lembrete|me lembra de|me lembrar de|lembrar de|lembra de|lembrar'))return {k:'pp',T};
+if(st('pendencias?|tarefas?'))return {k:'auto',T};
 if(st('(?:lista|compras?) (?:do|de|no) mercado|(?:no |do )?mercado'))return {k:'mkt',T};
 if(st('(?:lista|compras?) (?:da|de|na) feira|(?:na |da )?feira'))return {k:'fei',T};
 if(st('lavanderia (?:compra|compras|comprar)|(?:compra|compras|comprar) (?:da|na|pra|para a) lavanderia'))return {k:'lcomp',T};
@@ -279,6 +280,9 @@ if(st('(?:custo flutuante|custo)(?: da quadra)?'))return {k:'custo',t:'x',T};
 if(st('conta pontual|divida pontual|divida|pontual|devo|conta'))return {k:'pt',T};
 if(st('agenda|agendar|compromisso|marcar|marca|marque|evento'))return {k:'agp',T};
 if(/(^| )reuniao( |$)/.test(JN(T)))return {k:'agp',T};
+const W='(?:(?:para|pra|a|ao|na|no|nas|nos|da|do|das|dos|de|em|minha|nossa|lista|compras|compra|os|as|o) )*',E='(?= |$)$';
+const tail=[['lcomp','lavanderia'],['mkt','mercado'],['fei','feira'],['ceq','equipamentos?(?: (?:do|pro|para o) (?:cha|matte|mr matte))?'],['cins','insumos?(?: (?:do|pro|para o) (?:cha|matte|mr matte))?|(?:cha|matte|mr matte)'],['agp','agenda'],['pp','pendencias? pessoais?|pessoal'],['pend','quadra']];
+for(const [k,pt] of tail){if(T.length>1&&take(T,W+'(?:'+pt+')'+E))return {k,T}}
 return {k:'auto',T}}
 let QJ=[],JR=null,jWait=0;
 const KN={pend:'Demanda da Quadra',pp:'Pendência pessoal',mkt:'Mercado',fei:'Feira',lpen:'Lavanderia',lcomp:'Compra da lavanderia',cins:'Insumo do Mr.Matte',ceq:'Equipamento do Mr.Matte',agp:'Agenda',pt:'Conta pontual',custo:'Custo da Quadra',grav:'Gravação'};
@@ -287,7 +291,7 @@ function jExec(raw){let P=jParse(raw),k=P.k,T=P.T,out={raw,k,ids:[],msg:''};
 if(k==='done')return jDone(P.q,out);
 if(k==='auto'||k==='pend'||k==='grav'){const d=jDate(T),h=jTime(T),r=jResp(T),urg=!!take(T,'(?:com )?(?:urgente|urgencia|prioridade)'),c=jClient(T);
 if(k==='grav'){const lb=[c?c.n:'',jTxt(T)].filter(Boolean).join(' · ')||'Gravação';const x={id:uid(),date:d||today(),time:h,label:lb};S.grav.push(x);save();if(window.fbMoveGrav)window.fbMoveGrav();out.msg=`🎬 Gravação: ${lb} · 📅 ${fd(x.date)}${h?' '+h:''}`;out.k='grav';return out}
-if(k==='auto'&&!c){k='pp'}else k='pend';
+if(k==='auto'&&!c&&!r.some(x=>x!=='Eu')){k='pp'}else k='pend';
 if(c&&c.g==='sub')k='pp';
 const t=jTxt(T)||(c?'Demanda':'');if(!t)return null;
 if(k==='pp'){const tt=(c?c.n+': ':'')+t+(h?' ('+h+')':'');A('pp',{t:tt,d,ok:false});out.ids=[S.pp[S.pp.length-1].id];out.k='pp';out.msg=`📝 Pendência pessoal: ${tt}${d?' · 📅 '+fd(d):''}`;return out}
@@ -307,7 +311,7 @@ function jUndo(){const r=JR;if(!r||!r.ids.length)return;const col=r.k;
 if(r.done){const x=S[col].find(a=>a.id===r.ids[0]);if(x){if(col==='fx')x.pg='';else if(col==='pc'){x.f++;x.pg=''}else x.ok=false;if(col==='pend'&&SHR())window.fbPend.set(x);else save()}}
 else{S[col]=S[col].filter(x=>!r.ids.includes(x.id));if(col==='pend'&&SHR())r.ids.forEach(id=>window.fbPend.del(id));else save()}
 JR={raw:r.raw,ids:[],msg:'↩ Desfeito.'};render()}
-const jNeedsPend=raw=>{const P=jParse(raw);if(P.k==='done')return true;if(P.k==='pend')return true;if(P.k==='auto'){const T=P.T.slice();return !!jClient(T)}return false};
+const jNeedsPend=raw=>{const P=jParse(raw);if(P.k==='done')return true;if(P.k==='pend')return true;if(P.k==='auto'){const T=P.T.slice();return !!jClient(T)||jResp(T).some(x=>x!=='Eu')}return false};
 function johnRun(){if(!QJ.length)return;const raw=QJ[0];if(!window.__privReady||(jNeedsPend(raw)&&!window.sharedPend)){if(!jWait){jWait=1;render()}return}jWait=0;
 QJ.shift();let r=null;try{r=jExec(raw)}catch(e){r=null}
 JR=r||{raw,k:'none',ids:[],msg:'🤔 Não entendi. Tente começar com: demanda, pessoal, mercado, feira, agenda, gravação, insumo, equipamento, lavanderia, conta ou concluir.'};
