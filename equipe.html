@@ -48,9 +48,41 @@ input[type=checkbox]:checked{background:var(--lime);border-color:var(--lime)}inp
 .pf{position:fixed;z-index:99;pointer-events:none;width:10px;height:10px;border-radius:3px;animation:fly .9s ease-out forwards}
 .toast{position:fixed;left:50%;bottom:calc(30px + env(safe-area-inset-bottom,0px));z-index:100;background:#000;color:var(--lime);border:1px solid rgba(201,231,35,.5);padding:12px 18px;border-radius:30px;font-weight:700;box-shadow:0 10px 30px rgba(0,0,0,.5);animation:toast 2.2s ease forwards;pointer-events:none;max-width:90vw;text-align:center}
 @media (prefers-reduced-motion:reduce){.pf{display:none}}
+[hidden]{display:none!important}
+#app{padding-bottom:100px}
+.adf{position:fixed;right:16px;bottom:calc(18px + env(safe-area-inset-bottom,0px));z-index:90;display:flex;align-items:center;gap:8px;border:0;border-radius:999px;background:var(--lime);color:#0a0a0a;font:700 15px Inter,sans-serif;padding:11px 18px 11px 12px;box-shadow:0 10px 30px rgba(201,231,35,.3),0 4px 14px rgba(0,0,0,.6);cursor:pointer;transition:transform .15s}
+.adf:active{transform:scale(.95)}.adf .av{font-size:22px;line-height:1}
+.adp{position:fixed;z-index:95;left:0;right:0;bottom:0;height:min(84vh,700px);background:var(--card);border:1px solid var(--line);border-bottom:0;border-radius:22px 22px 0 0;display:flex;flex-direction:column;box-shadow:0 -20px 60px rgba(0,0,0,.65);padding-bottom:env(safe-area-inset-bottom,0px);animation:adup .25s ease}
+@media(min-width:720px){.adp{left:auto;right:20px;bottom:20px;width:430px;border-radius:22px;border-bottom:1px solid var(--line)}}
+@keyframes adup{from{transform:translateY(30px);opacity:0}}
+.adh{display:flex;align-items:center;gap:10px;padding:14px 16px;border-bottom:1px solid var(--line)}
+.ava{width:40px;height:40px;border-radius:12px;background:rgba(201,231,35,.12);border:1px solid rgba(201,231,35,.4);display:grid;place-content:center;font-size:21px;flex:none}
+.adh b{font:700 16px "Space Grotesk",Inter,sans-serif;letter-spacing:.06em}.adh small{display:block;font-size:12px}
+.adh .x{opacity:.8;font-size:18px}
+.adm{flex:1;overflow-y:auto;padding:14px 14px 6px;display:flex;flex-direction:column;gap:9px;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
+.bub{max-width:90%;padding:10px 13px;border-radius:16px;font-size:14.5px;line-height:1.45;word-wrap:break-word}
+.bub.a{background:var(--card2);border:1px solid var(--line);border-bottom-left-radius:5px;align-self:flex-start}
+.bub.u{background:var(--lime);color:#0a0a0a;font-weight:600;border-bottom-right-radius:5px;align-self:flex-end}
+.bub small{color:var(--mut)}.bub i{color:#d6d6dc}
+.bub .acts{display:flex;gap:6px;flex-wrap:wrap;margin-top:9px}.bub .mini:disabled{opacity:.35;cursor:default}
+.bub ul{margin:8px 0 0;padding:0;list-style:none}.bub li{padding:7px 0;border-top:1px solid var(--line);display:flex;gap:9px;align-items:flex-start}
+.bub li .mini{padding:3px 9px;flex:none}.bub .late{color:#ff8fa3}
+.bub .bar{margin:8px 0 2px}
+.ads{display:flex;gap:6px;overflow-x:auto;padding:8px 14px 2px;scrollbar-width:none}.ads::-webkit-scrollbar{display:none}.ads .mini{white-space:nowrap;flex:none}
+.adi{display:flex;gap:8px;padding:10px 12px 12px}.adi input{flex:1;font-size:16px;border-radius:999px;padding:11px 16px}
+.adi .btn{padding:11px 16px}.adi .mini{font-size:18px;padding:6px 12px}.mini.rec{background:var(--red);border-color:var(--red);animation:pulse 1s infinite}
+@keyframes pulse{50%{opacity:.6}}
+body.adon .toast{bottom:auto;top:calc(24px + env(safe-area-inset-top,0px))}
 </style>
 </head>
 <body><div class="wrap" id="auth" style="padding-bottom:0"></div><div class="wrap" id="app"></div>
+<button id="adBtn" class="adf" hidden onclick="adShow(true)"><span class="av">🎩</span>Adolph</button>
+<div id="adP" class="adp" hidden>
+<div class="adh"><div class="ava">🎩</div><div style="flex:1"><b>ADOLPH</b><small>assistente da Quadra</small></div><button class="x" onclick="adShow(false)" aria-label="Fechar">✕</button></div>
+<div class="adm" id="adM"></div>
+<div class="ads" id="adS"></div>
+<form class="adi" id="adF"><input id="adIn" placeholder="Ex: nova demanda pro Felipe…" autocomplete="off" enterkeyhint="send"><button type="button" id="adMic" class="mini" hidden aria-label="Falar">🎤</button><button class="btn" aria-label="Enviar">➤</button></form>
+</div>
 <script type="module">
 import{initializeApp}from"https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import{getAuth,onAuthStateChanged,signInWithEmailAndPassword,signOut,sendPasswordResetEmail}from"https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
@@ -114,16 +146,179 @@ $('#app').innerHTML=`<div><div class="brand"><img src="${LOGO}" alt=""><b>QUADRA
 function form(m){$('#app').innerHTML='';A.innerHTML=`<div class="brand" style="margin-top:14px"><img src="${LOGO}" alt=""><b>QUADRA SYSTEM<small>EQUIPE</small></b></div><div class="card" style="max-width:820px"><b>🔐 Entrar</b><div class="add" style="margin-top:8px"><input id="lgEmail" type="email" placeholder="Email" autocomplete="username"><input id="lgPass" type="password" placeholder="Senha" autocomplete="current-password"><button class="btn" id="lgGo">Entrar</button></div><div class="empty" id="lgMsg" style="margin-top:6px">${m||''}</div><a href="#" id="lgRes" class="empty">Esqueci a senha</a></div>`;
 document.getElementById('lgGo').onclick=async()=>{try{await signInWithEmailAndPassword(auth,document.getElementById('lgEmail').value.trim(),document.getElementById('lgPass').value)}catch(e){document.getElementById('lgMsg').textContent='Email ou senha incorretos.'}};
 document.getElementById('lgRes').onclick=async e=>{e.preventDefault();const em=document.getElementById('lgEmail').value.trim();if(!em){document.getElementById('lgMsg').textContent='Digite seu email acima e toque de novo.';return}try{await sendPasswordResetEmail(auth,em)}catch(x){}document.getElementById('lgMsg').textContent='Se o email estiver cadastrado, enviamos um link para criar nova senha.'}}
+/* ================= ADOLPH — assistente por comandos ================= */
+const nrm=s=>String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
+const RX=(p,f='iu')=>new RegExp('(^|[^\\p{L}\\d])(?:'+p+')(?![\\p{L}\\d])',f);
+const fx=s=>nrm(s).trim().replace(/[.*+?^${}()|[\]\\]/g,'\\$&').replace(/a/g,'[aáàâã]').replace(/e/g,'[eéèê]').replace(/i/g,'[iíì]').replace(/o/g,'[oóòôõ]').replace(/u/g,'[uúü]').replace(/c/g,'[cç]').replace(/\s+/g,'\\s+');
+const NMP={Felipe:'felipe|felps|lipe',Tuts:'tuts',Fabio:'f[aá]bio',Mari:'mari|mariana',Leo:'l[eé]o|leonardo'};
+const fNames=s=>/\b(todos|todo\s+mundo|equipe\s+toda|a\s+equipe)\b/i.test(nrm(s))?NOMES.slice():NOMES.filter(n=>RX(NMP[n]).test(s));
+const NPRE='(?:(?:respons[aá]ve(?:l|is):?|para|pra|pro|p\\/|com|do|da|de|e|ao|à|o|a)\\s+)*';
+const sNames=s=>{NOMES.forEach(n=>{s=s.replace(RX(NPRE+'(?:'+NMP[n]+')','giu'),'$1 ')});return s.replace(RX(NPRE+'(?:todos|todo\\s+mundo|equipe\\s+toda|a\\s+equipe)','giu'),'$1 ')};
+const GEN=new Set(['de','da','do','das','dos','e','and']);
+function fCl(s,only){const L=only||['Geral',...clientes];let best=null;
+L.forEach(c=>{const pats=c==='Geral'?['geral','interno','interna','quadra','ag[eê]ncia']:[fx(c)];
+if(c!=='Geral'){const tw=x=>nrm(x).split(/[^a-z0-9]+/).filter(t=>t.length>=2&&!GEN.has(t));tw(c).forEach(t=>{if(L.filter(x=>x!==c).every(x=>!tw(x).includes(t)))pats.push(fx(t))})}
+pats.forEach((p,i)=>{const m=s.match(RX(p));if(m){const sc=(i===0?100:0)+m[0].length;if(!best||sc>best.sc)best={c,sc,p}}})});
+if(best)best.re=RX('(?:(?:do|da|de|dos|das|pro|pra|para|no|na|ao|à|p\\/)\\s+)*(?:(?:o|a)\\s+)?(?:cliente\\s+)?(?:'+best.p+')','giu');return best}
+const D0=()=>{const x=new Date();x.setHours(12,0,0,0);return x},addDy=(x,n)=>{const y=new Date(x);y.setDate(y.getDate()+n);return y},iso=x=>x.toLocaleDateString('sv-SE');
+const nextMon=()=>{const t=D0();return addDy(t,((8-t.getDay())%7)||7)};
+const WDS=['dom','seg','ter','qua','qui','sex','sab'],wdn=d=>['dom','seg','ter','qua','qui','sex','sáb'][new Date(d+'T12:00:00').getDay()];
+const DPRE='(?:(?:at[eé]|pra|para|pro|p\\/|no|na|em|o|a|dia|prazo|data|entrega|entregar|marcad[ao]|agendad[ao]):?\\s+)*';
+function pd(s){let d=null,t='';const T0=D0(),MS=MES.map(nrm).join('|').replace(/c/g,'[cç]');
+const R=[['depois\\s+de\\s+amanh[aã]',()=>addDy(T0,2)],['amanh[aã]',()=>addDy(T0,1)],['hoje',()=>T0],
+['(\\d{1,2})\\/(\\d{1,2})(?:\\/(\\d{2,4}))?',m=>{let y=m[4]?+m[4]:T0.getFullYear();if(y<100)y+=2000;const x=new Date(y,+m[3]-1,+m[2],12);if(!m[4]&&x<addDy(T0,-60))x.setFullYear(y+1);return x}],
+['(\\d{1,2})\\s+de\\s+('+MS+')',m=>{const x=new Date(T0.getFullYear(),MES.map(nrm).indexOf(nrm(m[3])),+m[2],12);if(x<addDy(T0,-60))x.setFullYear(x.getFullYear()+1);return x}],
+['dia\\s+(\\d{1,2})',m=>{const x=new Date(T0.getFullYear(),T0.getMonth(),+m[2],12);if(+m[2]<T0.getDate())x.setMonth(x.getMonth()+1);return x}],
+['(?:(pr[oó]xim[ao])\\s+)?(segunda|ter[cç]a|quarta|quinta|sexta|s[aá]bado|domingo)(?:-?feira)?(\\s+(?:que\\s+vem|da\\s+(?:semana\\s+que\\s+vem|pr[oó]xima\\s+semana)))?',m=>{const ix=WDS.indexOf(nrm(m[3]).slice(0,3));if(m[4]&&/semana/i.test(m[4]))return addDy(nextMon(),(ix+6)%7);let df=(ix-T0.getDay()+7)%7;if(!df&&(m[2]||m[4]))df=7;return addDy(T0,df)}],
+['(?:em|daqui\\s+a)\\s+(\\d+)\\s+dias?',m=>addDy(T0,+m[2])],['semana\\s+que\\s+vem|pr[oó]xima\\s+semana',()=>nextMon()],
+['(?:fim|final)\\s+d[oe]\\s+m[eê]s',()=>new Date(T0.getFullYear(),T0.getMonth()+1,0,12)]];
+for(const[p,f]of R){const re=RX(DPRE+'(?:'+p+')');const m=s.match(re);if(m){const x=f(m);if(x&&!isNaN(x)){d=x;s=s.replace(re,'$1 ');break}}}
+for(const re of[RX('(?:[àa]s\\s+)?(\\d{1,2})\\s*(?:h(?:oras?|rs?)?|:)\\s*(\\d{2})?(?:\\s*min)?'),RX('[àa]s\\s+(\\d{1,2})(?![\\d\\/])')]){const m=s.match(re);if(m&&+m[2]<24){t=String(+m[2]).padStart(2,'0')+':'+(m[3]||'00');s=s.replace(re,'$1 ');break}}
+return{d:d?iso(d):'',t,s}}
+function clean(s){s=String(s).replace(/\s+/g,' ').replace(/\s+([,.;:!?])/g,'$1').trim();let p;do{p=s;s=s.replace(/^(?:[\s,.;:!\-–—]+|(?:e|de|da|do|pra|para|pro|que|a|o|com|ao|à)\s+)/i,'').replace(/(?:[\s,.;:\-–—]+|\s+(?:e|de|da|do|pra|para|pro|com|at[eé]|no|na|em|a|o|que|ao|à))$/i,'').trim()}while(p!==s);return s?s[0].toUpperCase()+s.slice(1):''}
+const STOP=new Set('a o as os de da do das dos e pra para pro que como ja um uma em no na com por esta ta foi pode favor isso essa esse aquela aquele dela dele minha meu demanda demandas tarefa tarefas pendencia marca marcar marque marcou concluir conclui conclua concluida concluido finaliza finalizar finalizada resolvi resolver resolve resolvida resolvido terminei termina terminar terminada fiz feita feito pronta pronto check apaga apagar apague remove remover exclui excluir deleta deletar tira tirar reabre reabrir desmarca desmarcar urgente urgencia deixa coloca bota torna muda mudar altera alterar adia adiar prorroga empurra prazo data passa passar transfere repassa delega mim adolph voce cliente entreguei entregue'.split(' '));
+const ord=(a,b)=>(b.urg?1:0)-(a.urg?1:0)||((a.d||'9')<(b.d||'9')?-1:(a.d||'9')>(b.d||'9')?1:0);
+function srch(q,pool,names,cl){let P=pool;if(names.length)P=P.filter(p=>names.some(n=>rl(p).map(disp).includes(n)));
+if(cl){const Q=P.filter(p=>p.c===cl.c);if(Q.length)P=Q;else if(cl.c!=='Geral')return[]}
+const tk=[...new Set(nrm(q).split(/[^a-z0-9]+/).filter(t=>t.length>=3&&!STOP.has(t)))];
+if(!tk.length)return P.slice().sort(ord);
+const sc=P.map(p=>{const h=nrm(p.t+' '+cl_(p.c)),hw=h.split(/[^a-z0-9]+/);let s=0;tk.forEach(t=>{if(h.includes(t))s+=1;else if(t.length>=4&&hw.some(w=>w.length>=4&&w.slice(0,4)===t.slice(0,4)))s+=.6;else if(t.length>=5&&hw.some(w=>w.length>=5&&w.slice(0,3)===t.slice(0,3)))s+=.4});return{p,s}}).filter(o=>o.s>0);
+if(!sc.length)return(cl&&cl.c!=='Geral')||names.length?P.slice().sort(ord):[];const mx=Math.max(...sc.map(o=>o.s));return sc.filter(o=>o.s>=mx-.01).map(o=>o.p).sort(ord)}
+let adMsgs=[],adFn={},adK=0,adUndo=null,adPend=null,adQ=new URLSearchParams(location.search).get('adolph'),ready={d:0,c:0},logged=false;
+const reg=f=>{adFn[++adK]=f;return adK};
+window.adGo=(k,el)=>{const f=adFn[k];if(!f)return;delete adFn[k];adMsgs.forEach(m=>(m.acts||[]).forEach(a=>{if(a.k===k)a.u=1}));if(el)el.disabled=true;f()};
+function adDraw(){const M=$('#adM');M.innerHTML=adMsgs.map(m=>`<div class="bub ${m.w}">${m.h}${m.acts&&m.acts.length?`<div class="acts">${m.acts.map(a=>`<button class="mini ${a.s?'sel':''}" ${a.u?'disabled':''} onclick="adGo(${a.k},this)">${esc(a.l)}</button>`).join('')}</div>`:''}</div>`).join('');M.scrollTop=M.scrollHeight}
+function say(h,acts){adMsgs.push({w:'a',h,acts:(acts||[]).map(a=>({l:a.l,s:a.s,k:reg(a.f)}))});if(adMsgs.length>80)adMsgs=adMsgs.slice(-60);adDraw()}
+const undoA=f=>{adUndo=f;return{l:'↩ Desfazer',f:()=>{if(adUndo===f)adUndo=null;f()}}};
+const shrt=p=>cl_(p.c)+': '+(p.t.length>38?p.t.slice(0,36)+'…':p.t);
+const dsc=p=>`<b>${esc(cl_(p.c))}</b>: ${esc(p.t)}<br><small>👤 ${rl(p).map(disp).map(esc).join(', ')||'—'}${p.d?` · 📅 ${wdn(p.d)} ${fd(p.d)}`:' · sem prazo'}${p.urg?' · 🔥 urgente':''}</small>`;
+const lin=p=>`<span><b>${esc(cl_(p.c))}</b>: ${esc(p.t)} <small>· ${rl(p).map(disp).map(esc).join(', ')}${p.d?` · <span class="${p.d<today()?'late':''}">📅 ${fd(p.d)}</span>`:''}${p.urg?' · 🔥':''}</small></span>`;
+const lst=(A,emp)=>A.length?'<ul>'+A.slice(0,15).map(p=>`<li><button class="mini" title="Marcar como resolvida" onclick="adGo(${reg(()=>apl('done',p))},this)">✓</button>${lin(p)}</li>`).join('')+'</ul>'+(A.length>15?`<small>…e mais ${A.length-15}</small>`:''):`<br><small>${emp}</small>`;
+function doCreate(p){const id=newId();put('demandas',id,p);say('📌 Demanda criada:<br>'+dsc(p),[undoA(()=>{deleteDoc(doc(db,'demandas',String(id))).catch(fail);say('↩ Pronto, apaguei essa demanda.')}),...(p.urg?[]:[{l:'🔥 Urgente',f:()=>{put('demandas',id,{urg:true},1);say('🔥 Marquei como urgente.')}}])])}
+function cCreate(o){let s=o;const names=fNames(s);s=sNames(s);const cl=fCl(s);if(cl)s=s.replace(cl.re,'$1 ');const dt=pd(s);s=dt.s;
+const urg=/urgen|prioridade|correndo|asap/.test(nrm(o));s=s.replace(RX('com\\s+urg[eê]ncia|urgente|urg[eê]ncia|prioridade(?:\\s+m[aá]xima)?|correndo','giu'),'$1 ');
+s=s.replace(/^\s*(?:(?:cri[ae]r?|crie|nova|novo|adicion[ae]r?|add|coloc[ae]r?|bot[ae]r?|lan[cç][ae]r?|anot[ae]r?|p[oõ]e|registr[ae]r?)\s+)?(?:(?:uma|um|a|nova|novo|mais)\s+)*(?:demandas?|tarefas?|pend[eê]ncias?|task)?\s*(?::|-|–)?\s*/i,' ');
+let t=clean(s);if(dt.t)t+=' às '+dt.t.replace(':00','h');
+if(!t)return say('Qual é a demanda? Me diga o que precisa ser feito, por exemplo:<br><i>nova demanda pro Tuts: editar reels da QB até sexta</i>');
+const p={c:cl?cl.c:'Geral',t,d:dt.d||'',r:names.map(toDB),urg,ok:false};
+if(!p.r.length){adPend=p;return say('Anotado:<br>'+dsc(p)+'<br><br>Pra quem é essa? <small>(pode escrever mais de um, ex: “Felipe e Tuts”)</small>',[...NOMES.map(n=>({l:n,f:()=>{adPend=null;p.r=[toDB(n)];doCreate(p)}})),{l:'👥 Todos',f:()=>{adPend=null;p.r=NOMES.map(toDB);doCreate(p)}}])}
+doCreate(p)}
+function apl(k,p,x){const id=p.id,P=list.find(q=>q.id===id)||p;
+if(k==='done'){if(P.ok)return say('Essa já estava resolvida ✅<br>'+dsc(P));put('demandas',id,{ok:true},1);celebrate(window.event);return say('✅ Resolvida:<br>'+dsc(P),[undoA(()=>{put('demandas',id,{ok:false},1);say('↩ Voltou para abertas.')})])}
+if(k==='reopen'){put('demandas',id,{ok:false},1);return say('↩ Reabri:<br>'+dsc(P),[undoA(()=>{put('demandas',id,{ok:true},1);say('Ok, resolvida de novo.')})])}
+if(k==='urg'||k==='unurg'){const v=k==='urg',o=!!P.urg;put('demandas',id,{urg:v},1);return say((v?'🔥 Marquei como urgente:':'😌 Tirei a urgência:')+'<br>'+dsc(Object.assign({},P,{urg:v})),[undoA(()=>{put('demandas',id,{urg:o},1);say('↩ Desfeito.')})])}
+if(k==='date'){const o=P.d||'';put('demandas',id,{d:x},1);return say(`📅 Novo prazo: <b>${wdn(x)} ${fd(x)}</b><br>`+dsc(Object.assign({},P,{d:x})),[undoA(()=>{put('demandas',id,{d:o},1);say('↩ Prazo voltou ao anterior.')})])}
+if(k==='resp'){const o=rl(P);put('demandas',id,{r:x},1);return say('👤 Responsável alterado:<br>'+dsc(Object.assign({},P,{r:x})),[undoA(()=>{put('demandas',id,{r:o},1);say('↩ Responsáveis restaurados.')})])}
+if(k==='del')return say('Apagar esta demanda?<br>'+dsc(P),[{l:'🗑 Sim, apagar',s:1,f:()=>{const b=Object.assign({},P);delete b.id;deleteDoc(doc(db,'demandas',String(id))).catch(fail);say('🗑 Apagada.',[undoA(()=>{put('demandas',id,b);say('↩ Demanda restaurada.')})])}},{l:'Cancelar',f:()=>say('Ok, deixei como está.')}])}
+function dAct(o,kind){let s=o;const dt=pd(s);s=dt.s;let names=fNames(s),k=kind,x;
+if(kind==='edit'){const n=nrm(o),m=s.match(/^(.*)(?:^|\s)(?:para|pra|pro|p\/)\s+(.*)$/i),tg=m?fNames(m[2]):[];
+if(/^(pass|transfer|repass|deleg|coloc|bot)/.test(n)&&names.length){k='resp';if(tg.length){x=tg.map(toDB);names=fNames(m[1])}else{x=names.map(toDB);names=[]}}
+else if(dt.d){k='date';x=dt.d}else if(names.length){k='resp';x=(tg.length?tg:names).map(toDB);names=tg.length?fNames(m[1]):[]}
+else return say('O que você quer mudar? Exemplos:<br><i>muda o prazo da demanda da QB pra sexta</i><br><i>passa a edição da Manzil pro Tuts</i>')}
+s=sNames(s);const cl=fCl(s);if(cl)s=s.replace(cl.re,'$1 ');
+const pool=list.filter(p=>k==='reopen'?p.ok:k==='del'?1:!p.ok),C=srch(s,pool,names,cl);
+if(!C.length)return say('Não achei nenhuma demanda '+(k==='reopen'?'resolvida':'aberta')+' com isso 🤔 Tenta citar o cliente ou uma palavra da demanda.');
+if(C.length===1)return apl(k,C[0],x);
+say('Achei mais de uma. Qual delas?',C.slice(0,8).map(p=>({l:shrt(p),f:()=>apl(k,p,x)})))}
+const GI='(?:(?:agend[ae]r?|marc[ae]r?|nova|novo|cri[ae]r?|adicion[ae]r?|coloc[ae]r?|bot[ae]r?|p[oõ]e|lan[cç][ae]r?|vamos\\s+ter|tem)\\s+)?(?:(?:uma|um|a|nova)\\s+)*(?:grava[cç](?:[aã]o|[oõ]es)|gravar)';
+const gl=e=>`<b>${esc(e.label)}</b><br><small>📅 ${wdn(e.date)} ${fd(e.date)}${e.time?' · ⏰ '+e.time:''}</small>`;
+function cGrav(o){if(!clientes.length)return say('Ainda não tenho a lista de clientes. O Leo precisa abrir o app principal uma vez para sincronizar.');
+const cl=fCl(o,clientes);if(!cl)return say('🎬 Gravação de qual cliente?',clientes.map(c=>({l:c,f:()=>cGrav(o+' — '+c)})));
+let s=o.replace(cl.re,'$1 ');const dt=pd(s);s=dt.s;
+if(!dt.d){const nm=nextMon(),t0=D0();return say(`🎬 <b>${esc(cl.c)}</b> — pra quando?`,[{l:'Próx. segunda '+fd(iso(nm)),f:()=>cGrav(o+' '+fd(iso(nm)))},{l:'Amanhã',f:()=>cGrav(o+' amanhã')},{l:'Hoje',f:()=>cGrav(o+' hoje')}])}
+const note=clean(s.replace(RX(GI,'giu'),'$1 ')),e={date:dt.d,time:dt.t,label:cl.c+(note?' — '+note:'')},id=newId(),same=gravs.filter(g=>g.date===dt.d);
+put('gravacoes',id,e);say('🎬 Gravação agendada!<br>'+gl(e)+(same.length?`<br><small>⚠️ Já tem ${same.length} gravação(ões) nesse dia: ${same.map(g=>esc(g.label)+(g.time?' '+g.time:'')).join('; ')}</small>`:''),[undoA(()=>{deleteDoc(doc(db,'gravacoes',String(id))).catch(fail);say('↩ Gravação removida.')})])}
+function gFind(o,useDate){const cl=fCl(o,clientes);let s=cl?o.replace(cl.re,'$1 '):o;const dt=pd(s);let G=gravs.filter(e=>e.date>=today());
+if(cl)G=G.filter(e=>nrm(e.label).includes(nrm(cl.c)));if(useDate&&dt.d)G=G.filter(e=>e.date===dt.d);return{G:G.sort((a,b)=>(a.date+(a.time||''))<(b.date+(b.time||''))?-1:1),dt}}
+function gDelOne(e){const b=Object.assign({},e);delete b.id;deleteDoc(doc(db,'gravacoes',String(e.id))).catch(fail);say('🗑 Gravação cancelada:<br>'+gl(e),[undoA(()=>{put('gravacoes',e.id,b);say('↩ Gravação de volta no calendário.')})])}
+function gDel(o){const{G}=gFind(o,1);if(!G.length)return say('Não achei nenhuma gravação futura com isso 🤔');if(G.length===1)return gDelOne(G[0]);say('Qual gravação cancelar?',G.slice(0,8).map(e=>({l:fd(e.date)+' '+(e.time||'')+' '+e.label,f:()=>gDelOne(e)})))}
+function gEdOne(e,dt){const n={date:dt.d||e.date,time:dt.t||e.time||''},b={date:e.date,time:e.time||''};put('gravacoes',e.id,n,1);say('📅 Gravação remarcada:<br>'+gl(Object.assign({},e,n)),[undoA(()=>{put('gravacoes',e.id,b,1);say('↩ Voltou para a data anterior.')})])}
+function gEd(o){const{G,dt}=gFind(o,0);if(!dt.d&&!dt.t)return say('Pra quando? Ex: <i>remarca a gravação da QB pra terça às 15h</i>');if(!G.length)return say('Não achei nenhuma gravação futura desse cliente 🤔');if(G.length===1)return gEdOne(G[0],dt);say('Qual gravação remarcar?',G.slice(0,8).map(e=>({l:fd(e.date)+' '+(e.time||'')+' '+e.label,f:()=>gEdOne(e,dt)})))}
+function cVid(o,n){const L=Object.keys(videos).filter(k=>videos[k]>0);if(!L.length)return say('Ainda não há clientes com vídeos combinados. O Leo precisa abrir o app principal uma vez para sincronizar.');
+const cl=fCl(o,L);if(!cl)return say('🎬 De qual cliente?',L.map(c=>({l:c,f:()=>cVid(o+' — '+c,n)})));
+const c=cl.c,N=videos[c],m=today().slice(0,7),id=m+'__'+c.replace(/[\/\s.#$\[\]]+/g,'_'),ov=(ents[id]||{}).v||[],old=Array.from({length:N},(_,k)=>!!ov[k]),v=old.slice();
+const on=!/desmarc|tira|volta|nao\s+(foi\s+)?entreg|errei|desfaz/.test(n),s=nrm(o.replace(cl.re,'$1 '));
+const mi=s.match(/(?:videos?|reels?)\s*(?:n[o.]?\s*|numero\s*|#\s*)?(\d+(?:\s*(?:,|e|a|ate|-)\s*\d+)*)/),mc=s.match(/(\d+)\s*(?:videos?|reels?)/);
+if(mi){const ns=mi[1].split(/\s*(?:,|e)\s*/);ns.forEach(z=>{const r=z.split(/\s*(?:a|ate|-)\s*/).map(Number),a=r[0],b=r[1]||r[0];for(let i=a;i<=b;i++)if(i>=1&&i<=N)v[i-1]=on})}
+else if(/\btod[oa]s\b|\btudo\b/.test(s))v.fill(on);
+else{let k=mc?+mc[1]:1;if(on){for(let i=0;i<N&&k>0;i++)if(!v[i]){v[i]=true;k--}}else{for(let i=N-1;i>=0&&k>0;i--)if(v[i]){v[i]=false;k--}}}
+const dn=v.filter(Boolean).length;
+if(v.every((z,i)=>z===old[i]))return say(`Nada mudou: <b>${esc(c)}</b> está com ${dn}/${N} vídeos entregues este mês.`);
+ents[id]={m,c,v};put('entregas',id,{m,c,v});render();
+if(on&&dn>old.filter(Boolean).length)celebrate(window.event,dn===N?`🏆 ${c}: todos os ${N} vídeos entregues!`:`🎬 ${c}: ${dn}/${N}! ${MSGS[Math.floor(Math.random()*MSGS.length)]}`,dn===N);
+say(`🎬 <b>${esc(c)}</b> — ${dn}/${N} vídeos entregues em ${MES[+m.slice(5)-1]}${dn===N?' 🏆':''}<div class="bar"><i style="width:${dn/N*100}%"></i></div><small>${v.map((z,i)=>(z?'✅':'⬜')+(i+1)).join(' ')}</small>`,[undoA(()=>{ents[id]={m,c,v:old};put('entregas',id,{m,c,v:old});render();say('↩ Vídeos voltaram como estavam.')})])}
+function qry(o,n){const T=today(),open=list.filter(p=>!p.ok).sort(ord);
+if(/grava/.test(n)){let G=gravs.filter(e=>e.date>=T).sort((a,b)=>(a.date+(a.time||''))<(b.date+(b.time||''))?-1:1),tt='🎬 Próximas gravações';const cl=fCl(o,clientes);
+if(cl){G=G.filter(e=>nrm(e.label).includes(nrm(cl.c)));tt+=' · '+cl.c}
+if(/hoje/.test(n)){G=G.filter(e=>e.date===T);tt='🎬 Gravações de hoje'}else if(/amanh/.test(n)){const a=iso(addDy(D0(),1));G=G.filter(e=>e.date===a);tt='🎬 Gravações de amanhã'}else if(/semana/.test(n)){const a=iso(addDy(D0(),7));G=G.filter(e=>e.date<=a);tt='🎬 Gravações dos próximos 7 dias'}
+return say(`<b>${esc(tt)}</b> (${G.length})`+(G.length?'<ul>'+G.slice(0,12).map(e=>`<li><span class="tag">${wdn(e.date)} ${fd(e.date)}${e.time?' '+e.time:''}</span><span>${esc(e.label)}</span></li>`).join('')+'</ul>':'<br><small>Nenhuma gravação marcada.</small>'))}
+if(/videos?|entregas|reels/.test(n)){const L=Object.keys(videos).filter(k=>videos[k]>0),m=T.slice(0,7);if(!L.length)return say('Ainda não há clientes com vídeos combinados.');let tt=0,td=0;
+const rows=L.map(c=>{const N=videos[c],v=(ents[m+'__'+c.replace(/[\/\s.#$\[\]]+/g,'_')]||{}).v||[],d=Array.from({length:N},(_,k)=>!!v[k]).filter(Boolean).length;tt+=N;td+=d;return`<li><span class="tag">${d}/${N}</span><span>${esc(c)}${d===N?' 🏆':''}</span></li>`}).join('');
+return say(`<b>🎬 Vídeos de ${MES[+m.slice(5)-1]}</b>: ${td}/${tt}<div class="bar"><i style="width:${tt?td/tt*100:0}%"></i></div><ul>${rows}</ul>`)}
+const names=fNames(o),cl=fCl(sNames(o));let P=open,tt='⏳ Demandas abertas';
+if(names.length&&names.length<NOMES.length){P=P.filter(p=>names.some(x=>rl(p).map(disp).includes(x)));tt='⏳ Abertas de '+names.join(' e ')}
+if(cl){P=P.filter(p=>p.c===cl.c);tt+=' · '+cl_(cl.c)}
+if(/atras|venc/.test(n)){P=P.filter(p=>p.d&&p.d<T);tt='⏰ Atrasadas'+(names.length?' · '+names.join(', '):'')}
+else if(/urgen/.test(n)){P=P.filter(p=>p.urg);tt='🔥 Urgentes'+(names.length?' · '+names.join(', '):'')}
+else if(/hoje/.test(n)){P=P.filter(p=>p.d&&p.d<=T);tt='📅 Pra hoje (e atrasadas)'}
+else if(/amanh/.test(n)){const a=iso(addDy(D0(),1));P=P.filter(p=>p.d===a);tt='📅 Pra amanhã'}
+else if(/semana/.test(n)){const a=iso(addDy(D0(),7));P=P.filter(p=>p.d&&p.d<=a);tt='📅 Próximos 7 dias'}
+else if(/resolvid|feit|conclu|pront/.test(n)){P=list.filter(p=>p.ok&&(!names.length||names.some(x=>rl(p).map(disp).includes(x)))&&(!cl||p.c===cl.c));return say(`<b>✅ Resolvidas</b> (${P.length})`+(P.length?'<ul>'+P.slice(0,15).map(p=>`<li>${lin(p)}</li>`).join('')+'</ul>':'<br><small>Nenhuma.</small>'))}
+else if(!names.length&&!cl)return resumo();
+say(`<b>${esc(tt)}</b> (${P.length})`+lst(P,'Nada aqui. Tudo em dia! 🌈'))}
+function resumo(){const T=today(),o=list.filter(p=>!p.ok),at=o.filter(p=>p.d&&p.d<T).length,hj=o.filter(p=>p.d===T).length,ur=o.filter(p=>p.urg).length,ng=gravs.filter(e=>e.date>=T).sort((a,b)=>(a.date+(a.time||''))<(b.date+(b.time||''))?-1:1)[0];
+const per=NOMES.map(n=>[n,o.filter(p=>rl(p).map(disp).includes(n)).length]).filter(x=>x[1]);
+say(`<b>📋 Resumo</b><br>⏳ ${o.length} abertas · 🔥 ${ur} urgentes · ⏰ ${at} atrasadas · 📅 ${hj} pra hoje<br><small>${per.map(([n,c])=>`${n}: ${c}`).join(' · ')||'Ninguém com pendência 🌈'}</small>${ng?`<br><br>🎬 Próxima gravação: <b>${esc(ng.label)}</b> <small>${wdn(ng.date)} ${fd(ng.date)}${ng.time?' '+ng.time:''}</small>`:''}`,
+[{l:'⏰ Ver atrasadas',f:()=>adSend('o que está atrasado?')},{l:'🔥 Ver urgentes',f:()=>adSend('quais são as urgentes?')},{l:'📅 Pra hoje',f:()=>adSend('o que tem pra hoje?')}])}
+function help(){say(`Eu entendo frases normais. Alguns exemplos:<br><br>
+<b>➕ Criar</b><br><i>nova demanda pro Felipe: editar reels da QB até sexta, urgente</i><br><br>
+<b>✅ Concluir</b><br><i>marca como feita a edição da Manzil</i><br><br>
+<b>✏️ Mudar</b><br><i>adia a demanda da Urbanic pra segunda</i> · <i>passa a arte da HD pro Tuts</i> · <i>marca a da Menfis como urgente</i><br><br>
+<b>🗑 Apagar / reabrir</b><br><i>apaga a demanda do roteiro</i> · <i>reabre a da QB</i><br><br>
+<b>🎬 Gravações</b><br><i>agenda gravação da QB segunda às 14h no escritório</i> · <i>remarca a gravação da Manzil pra terça</i> · <i>cancela a gravação da CT</i><br><br>
+<b>🎞 Vídeos entregues</b><br><i>vídeo 3 da QB entregue</i> · <i>entreguei 2 vídeos da Manzil</i> · <i>desmarca o vídeo 4 da HD</i><br><br>
+<b>🔎 Perguntar</b><br><i>o que o Felipe tem?</i> · <i>o que está atrasado?</i> · <i>gravações da semana</i> · <i>como estão os vídeos?</i><br><br>
+<small>Errou? Toque em “↩ Desfazer” ou escreva <i>desfaz</i>.</small>`)}
+function adRun(raw){const o=raw.replace(/^\s*(?:(?:ei|oi|ol[aá]|opa|e\s+a[ií])[,!]?\s+)?adolph[,:!]?\s*/i,'').trim();if(!o)return say('Oi! Em que posso ajudar? 🎩');const n=nrm(o).trim();
+if(adPend){const p=adPend,nm=fNames(o);adPend=null;if(nm.length&&n.split(/\s+/).length<=6){p.r=nm.map(toDB);return doCreate(p)}}
+if(/^(ajuda|help|comandos|\?|o que (voce|vc) (faz|sabe))/.test(n))return help();
+if(/^(oi|ola|opa|bom dia|boa tarde|boa noite|e ai|hey)\b/.test(n)&&n.split(/\s+/).length<=3)return say('Olá! 🎩 Como posso ajudar? Toque em <b>❓ Ajuda</b> para ver exemplos.');
+if(/^(obrigad|valeu|vlw|brigad|thanks)/.test(n))return say('Às ordens! 🎩');
+if(/^(desfaz|desfazer|desfaca|volta isso|ctrl ?z)/.test(n)){if(!adUndo)return say('Não tenho nada para desfazer agora.');const f=adUndo;adUndo=null;return f()}
+const isQ=/\?\s*$/.test(o)||/^(quais|qual|quando|quanto|quantas|quantos|lista|listar|mostra|mostrar|ver|veja|o que|oq|que|tem|resumo|status|como|minhas|meus|cade)\b/.test(n);
+if(/grava/.test(n)&&!/^(nova|novo|cri|crie|adicion|add|demanda|tarefa)\b/.test(n)||/grava/.test(n)&&/^(agend|marc)/.test(n)){if(isQ&&!/^(agend|marc)/.test(n))return qry(o,n);
+if(/^(cancel|apag|remov|exclu|delet|tir|desmarc|desagend)/.test(n))return gDel(o);
+if(/^(mud|alter|adi|reagend|remarc|troc|pass|empurr|transfer)/.test(n))return gEd(o);return cGrav(o)}
+if(isQ)return qry(o,n);
+if(/videos?|reels?/.test(n)&&/\d|\btod[oa]s\b/.test(n)&&!/^(nova|novo|cri|crie|adicion|add|demanda|tarefa|coloc|bot|anot)/.test(n)&&(/entreg|subi|postad|postei|pronto|feito|desmarc|^marc|^tira|^volta/.test(n)))return cVid(o,n);
+if(/^(cri|crie|nova|novo|adicion|add|coloc|bot|lanc|anot|poe|registr|demanda|tarefa|pendencia)/.test(n)&&!/^(coloc|bot|poe)\w*\s.*\b(urgen|como|pra|para|pro)\b/.test(n)&&!/^(coloc|bot)\w*\s.*urgen/.test(n))return cCreate(o);
+if(/urgen|prioridade/.test(n)&&/^(tira|remov|desmarc|sem|nao)/.test(n))return dAct(o,'unurg');
+if(/urgen|prioriz/.test(n)&&/^(marc|deix|coloc|bot|torn|poe|prioriz|urgen)/.test(n))return dAct(o,'urg');
+if(/^(reabr|desmarc|volt)/.test(n))return dAct(o,'reopen');
+if(/^(apag|remov|exclu|delet|tira|tirar|cancel)/.test(n))return dAct(o,'del');
+if(/^(marc|conclu|finaliz|feito|feita|fiz|termin|resolv|check|ok\b|pront|entreg|ja\s+(fiz|entreg|termin|resolv))/.test(n)||/(feit[ao]|pront[ao]|resolvid[ao]|concluid[ao]|entregue)$/.test(n))return dAct(o,'done');
+if(/^(mud|alter|adi|prorrog|empurr|troc|pass|transfer|repass|deleg)/.test(n))return dAct(o,'edit');
+if(fNames(o).length||fCl(o)&&fCl(o).c!=='Geral')return say(`Não tenho certeza do que fazer com isso 🤔 Quer que eu crie como nova demanda?`,[{l:'➕ Criar demanda',s:1,f:()=>cCreate(o)},{l:'❓ Ajuda',f:help}]);
+say('Hmm, não entendi 😅 Tente algo como <i>nova demanda pro Tuts: …</i> ou toque em <b>❓ Ajuda</b>.',[{l:'❓ Ajuda',f:help}])}
+function adSend(t){t=String(t||'').trim();if(!t)return;adMsgs.push({w:'u',h:esc(t)});adDraw();try{adRun(t)}catch(e){console.error(e);say('Ops, me enrolei com isso 😅 Tenta escrever de outro jeito?')}}
+window.adSend=adSend;
+window.adShow=v=>{$('#adP').hidden=!v;document.body.classList.toggle('adon',!!v);$('#adBtn').hidden=v||!logged;if(v){if(!adMsgs.length)say('Olá! Eu sou o <b>Adolph</b> 🎩, assistente da Quadra.<br>Escreva o que precisa: crio demandas, marco como feitas, mudo prazos e responsáveis, agendo gravações e marco vídeos entregues.');adDraw()}};
+$('#adS').innerHTML=[['📋 Resumo','resumo'],['⏰ Atrasadas','o que está atrasado?'],['🔥 Urgentes','quais são as urgentes?'],['🎬 Gravações','próximas gravações?'],['🎞 Vídeos','como estão os vídeos?'],['➕ Nova demanda',0],['❓ Ajuda','ajuda']].map(([l,c])=>`<button class="mini" type="button" data-c="${c||''}">${l}</button>`).join('');
+$('#adS').onclick=e=>{const b=e.target.closest('button');if(!b)return;if(b.dataset.c)adSend(b.dataset.c);else{const i=$('#adIn');i.value='Nova demanda pro ';i.focus()}};
+$('#adF').onsubmit=e=>{e.preventDefault();const i=$('#adIn');adSend(i.value);i.value=''};
+(()=>{const SR=window.SpeechRecognition||window.webkitSpeechRecognition,b=$('#adMic');if(!SR)return;b.hidden=false;b.onclick=()=>{try{const r=new SR();r.lang='pt-BR';r.interimResults=false;r.maxAlternatives=1;b.classList.add('rec');r.onresult=e=>adSend(e.results[0][0].transcript);r.onend=r.onerror=()=>b.classList.remove('rec');r.start()}catch(x){b.classList.remove('rec')}}})();
+function adTry(){if(adQ&&ready.d&&ready.c){const q=adQ;adQ=null;history.replaceState(null,'',location.pathname);adShow(true);adSend(q)}}
 window.render=render;
-onAuthStateChanged(auth,u=>{unsubs.forEach(f=>f());unsubs=[];list=[];gravs=[];ents={};clientes=[];videos={};msg='';
-if(!u){form();return}
+onAuthStateChanged(auth,u=>{unsubs.forEach(f=>f());unsubs=[];list=[];gravs=[];ents={};clientes=[];videos={};msg='';ready={d:0,c:0};logged=!!u;
+if(!u){adShow(false);form();return}
+$('#adBtn').hidden=!$('#adP').hidden;
 A.innerHTML=`<div class="sync">👤 ${esc(u.email)} · <a href="#" id="lgOut">Sair</a></div>`;document.getElementById('lgOut').onclick=e=>{e.preventDefault();signOut(auth)};
 const deny=()=>{msg='Seu email não tem acesso a esta página. Fale com o Leo.';render()};
 const arr=(sn)=>sn.docs.map(d=>Object.assign({},d.data(),{id:Number(d.id)}));
-unsubs.push(onSnapshot(collection(db,'demandas'),sn=>{list=arr(sn);render()},deny));
+unsubs.push(onSnapshot(collection(db,'demandas'),sn=>{list=arr(sn);ready.d=1;render();adTry()},deny));
 unsubs.push(onSnapshot(collection(db,'gravacoes'),sn=>{gravs=arr(sn);gmsg='';render()},e=>{gmsg='⚠️ Sem acesso ao calendário de gravações ('+(e.code||'erro')+'). Avise o Leo: as regras do banco precisam ser atualizadas.';render()}));
 unsubs.push(onSnapshot(collection(db,'entregas'),sn=>{ents={};sn.docs.forEach(d=>ents[d.id]=d.data());render()},()=>{}));
-unsubs.push(onSnapshot(doc(db,'config','quadra'),sn=>{const d=sn.exists()?sn.data():{};clientes=d.clientes||[];videos=d.videos||{};render()},()=>{}));
+unsubs.push(onSnapshot(doc(db,'config','quadra'),sn=>{const d=sn.exists()?sn.data():{};clientes=d.clientes||[];videos=d.videos||{};ready.c=1;render();adTry()},()=>{ready.c=1;adTry()}));
 render()});
 </script>
 </body></html>
