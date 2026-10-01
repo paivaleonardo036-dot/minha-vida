@@ -63,6 +63,8 @@ input[type=checkbox]{width:28px;height:28px;accent-color:var(--c)}
 @media (prefers-reduced-motion:reduce){.pf{display:none}}
 .num{width:110px}small{color:var(--mut)}
 [hidden]{display:none!important}
+.lkf{animation:lkf 1.6s ease 2}
+@keyframes lkf{50%{box-shadow:0 0 0 4px rgba(201,231,35,.55);border-color:#c9e723}}
 .hl{display:flex;flex-direction:column;gap:10px;margin:12px 0}
 .sec{font-size:13px;font-weight:bold;letter-spacing:.12em;text-transform:uppercase;color:var(--mut);margin:24px 4px 8px}
 .hi{display:flex;align-items:center;gap:14px;width:100%;text-align:left;font:inherit;color:var(--ink);background:var(--card);border:2px solid var(--line);border-left:8px solid var(--c);border-radius:20px;padding:14px 16px;cursor:pointer;transition:transform .12s}
@@ -154,7 +156,9 @@ function setSync(t){syncTxt=t;const e=document.querySelector('#sync');if(e)e.tex
 function stash(){try{localStorage.setItem(K,JSON.stringify(S));localStorage.setItem(K+'-at',String(LAT))}catch(e){}}
 const snapJ=()=>JSON.stringify(window.sharedPend?Object.assign({},S,{pend:[]}):S);
 function cloudPush(){if(window.fbSave){setSync('⏳ Salvando…');window.fbSave(LAT,snapJ())}}
-function save(){LAT=Date.now();stash();cloudPush()}
+function quadraMine(){return S.cli.filter(c=>c.g!=='sub'&&!c.i).reduce((a,c)=>a+part(c).Eu,0)}
+function syncAuto(){const v=Math.round(quadraMine()*100)/100;let ch=false;S.en.forEach(e=>{if(e.auto==='quadra'&&e.v!==v){e.v=v;ch=true}});return ch}
+function save(){syncAuto();LAT=Date.now();stash();cloudPush()}
 window.appApply=(json,at)=>{try{const keep=window.sharedPend?S.pend:null;S=Object.assign(seed(),JSON.parse(json));if(keep)S.pend=keep;LAT=+at||0;if(mig())save();else stash();render()}catch(e){}};
 window.appLocal=()=>({at:LAT,json:snapJ()});
 window.appShared=l=>{S.pend=l;window.sharedPend=true;render()};window.appPend=()=>S.pend;window.appNames=()=>S.cli.filter(c=>c.g!=='sub').map(c=>c.n);window.appVideos=()=>{const o={};S.cli.filter(c=>c.g!=='sub').forEach(c=>{const m=/(\d+)\s*(v[ií]deos?|reels?)/i.exec(c.e||'');if(m)o[c.n]=+m[1]});return o};window.appGrav=()=>S.grav;window.appClearGrav=()=>{S.grav=[];save()};
@@ -170,7 +174,7 @@ function A(k,o){const x=Object.assign({id:uid()},o);S[k].push(x);if(k==='pend'&&
 function D(k,id){if(k!=='mkt'&&k!=='fei'&&!confirm('Apagar este item?'))return;S[k]=S[k].filter(x=>x.id!==id);if(k==='pend'&&SHR())window.fbPend.del(id);else save();render()}
 const go2=(t,s)=>{tab=t;sub[t]=s;render()};
 const sortU=(a,b)=>(b.urg?1:0)-(a.urg?1:0)||sortT(a,b);
-function U(k,id,f,v){if(f==='ok'&&v===true)celebrate(window.event);const x=S[k].find(a=>a.id===id);x[f]=v;if(k==='pend'&&SHR())window.fbPend.set(x);else save();render()}
+function U(k,id,f,v){if(f==='ok'&&v===true){celebrate(window.event);if(k==='pend'){lkId=id;lkT=Date.now()}}const x=S[k].find(a=>a.id===id);x[f]=v;if(k==='pend'&&SHR())window.fbPend.set(x);else save();render()}
 function note(v){S.notes[tab]=v;save()}
 function shift(k,n){const d=cm[k];cm[k]=new Date(d.getFullYear(),d.getMonth()+n,1);render()}
 const inp=(id,ph,x='')=>`<input id="${id}" placeholder="${ph}" ${x}>`;
@@ -190,6 +194,7 @@ function finV(){const tot={Eu:0,Felipe:0,Tuts:0,'Operação':0};let ent=0;
 S.cli.forEach(c=>{const p=part(c);ent+=+c.v||0;SH.forEach(k=>tot[k]+=p[k])});
 const cf=S.custos.filter(c=>c.t==='f').reduce((a,c)=>a+c.v,0),cx=S.custos.filter(c=>c.t==='x').reduce((a,c)=>a+c.v,0),sobra=tot['Operação']-cf-cx;
 let h=`<div class="card"><b>💵 Entra por mês: ${m$(ent)}</b><div class="kpi" style="margin-top:8px">${SH.map(k=>`<div>${k==='Operação'?'🏢':'🙂'} ${k}<b>${m$(tot[k])}</b></div>`).join('')}</div></div>`;
+h+=`<div class="card"><small>🔗 Sua parte nos clientes da Quadra (sem SUB): <b>${m$(quadraMine())}</b>. Esse valor entra sozinho em <b>Meu Dinheiro › Entradas</b>.</small></div>`;
 h+=`<h2>👥 Por cliente</h2><div class="card">${S.cli.filter(c=>!c.i).map(c=>{const p=part(c);return `<div class="row"><span class="t"><b>${esc(c.n)}</b>${c.g==='sub'?' <small>(SUB)</small>':''}<br><small>${SH.filter(k=>p[k]>0).map(k=>k+' '+m$(p[k])).join(' · ')}</small></span><input class="num" type="number" value="${c.v}" onchange="U('cli',${c.id},'v',+this.value)"><input class="num" style="width:70px" type="number" placeholder="dia" value="${c.d||''}" onchange="U('cli',${c.id},'d',+this.value)"></div>`}).join('')}</div>`;
 h+=`<h2>📌 Custos fixos: ${m$(cf)}</h2><div class="card">${custoRows('f')}</div><h2>🎈 Custos flutuantes: ${m$(cx)}</h2><div class="card">${custoRows('x')}</div>`;
 h+=`<div class="card add">${inp('kn','Nome do custo')}<input id="kv" type="number" placeholder="Valor" class="num"><select id="kt"><option value="f">Fixo</option><option value="x">Flutuante</option></select><button class="btn" onclick="if(g('kn'))A('custos',{n:g('kn'),v:+g('kv'),t:$('#kt').value,o:''})">＋ Custo</button></div>`;
@@ -203,12 +208,12 @@ function msUp(el){const d=el.closest('details'),a=[...d.querySelectorAll('input:
 function msPos(d){const l=d.querySelector('.ml');if(!d.open)return;l.style.left='0';l.style.right='auto';const r=l.getBoundingClientRect();if(r.right>innerWidth-8){l.style.left='auto';l.style.right='0'}}
 document.addEventListener('click',e=>document.querySelectorAll('details.ms[open]').forEach(d=>{if(!d.contains(e.target))d.open=false}));
 const picked=nm=>{const a=[...document.querySelectorAll(`input[name=${nm}]:checked`)].map(x=>x.value);return a.length?a:['Eu']};
-let editId=0;
+let editId=0,lkId=0,lkT=0;
 function addP(){if(!g('pt'))return;A('pend',{c:$('#pc').value,t:g('pt'),d:$('#pd').value,r:picked('rs'),urg:$('#pu').checked,ok:false})}
 function updP(id,o){const x=S.pend.find(a=>a.id===id);Object.assign(x,o);if(SHR())window.fbPend.set(x);else save();render()}
 function saveEdit(id){if(!g('et'))return;const o={c:$('#ec').value,t:g('et'),d:$('#ed').value,r:picked('rse'),urg:$('#eu').checked};editId=0;updP(id,o)}
 function editForm(p){const cl=['Geral',...S.cli.map(c=>c.n)];if(!cl.includes(p.c))cl.push(p.c);return `<div class="row" style="background:var(--bg);border-radius:12px;padding:10px"><div class="add" style="width:100%"><select id="ec">${cl.map(n=>`<option ${n===p.c?'selected':''}>${esc(n)}</option>`).join('')}</select><input id="et" value="${esc(p.t)}" style="flex:1 1 200px"><input id="ed" type="date" value="${p.d||''}">${chips('rse',rl(p))}<label class="chip"><input type="checkbox" id="eu" ${p.urg?'checked':''}> 🔥 Urgente</label><button class="btn" onclick="saveEdit(${p.id})">💾 Salvar</button><button class="mini" onclick="editId=0;render()">Cancelar</button></div></div>`}
-function linkBox(p){return `<div style="flex-basis:100%;display:flex;gap:6px;align-items:center"><input placeholder="🔗 Link do arquivo entregue" value="${esc(p.link||'')}" onchange="U('pend',${p.id},'link',this.value.trim())" style="flex:1">${okU(p.link)?`<a class="tag" href="${esc(p.link)}" target="_blank" rel="noopener">Abrir</a>`:''}</div>`}
+function linkBox(p){return `<div style="flex-basis:100%;display:flex;gap:6px;align-items:center"><input data-lk="${p.id}" placeholder="🔗 Cole aqui o link do arquivo entregue" value="${esc(p.link||'')}" onchange="U('pend',${p.id},'link',this.value.trim())" style="flex:1">${okU(p.link)?`<a class="tag" href="${esc(p.link)}" target="_blank" rel="noopener">Abrir</a>`:''}</div>`}
 function pendV(){const P=S.pend.filter(p=>pf==='Todos'||rl(p).includes(pf)).sort(sortU),T=today();
 const row=p=>editId===p.id?editForm(p):`<div class="row ${p.urg&&!p.ok?'urg':''} ${p.ok?'done':''}"><input type="checkbox" ${p.ok?'checked':''} onchange="U('pend',${p.id},'ok',this.checked)"><span class="t"><b>${esc(p.c)}</b>: ${esc(p.t)}</span>${p.urg&&!p.ok?'<span class="tag hot">🔥 URGENTE</span>':''}<span class="tag">👤 ${rl(p).map(esc).join(', ')}</span>${p.d?`<span class="tag ${p.d<T&&!p.ok?'late':''}">📅 ${fd(p.d)}</span>`:''}${p.ok?'':`<button class="mini ${p.urg?'sel':''}" onclick="U('pend',${p.id},'urg',${!p.urg})">🔥</button>`}<button class="x" onclick="editId=${p.id};render()">✏️</button><button class="x" onclick="D('pend',${p.id})">🗑</button>${p.ok?linkBox(p):''}</div>`;
 const o=P.filter(p=>!p.ok),f=P.filter(p=>p.ok);
@@ -242,7 +247,7 @@ ${q.length?`<small>🎉 Quitadas: ${q.map(x=>esc(x.n)).join(', ')}</small>`:''}
 <div class="add" style="margin-top:8px">${inp('xn','Nova parcela')}<input id="xv" type="number" class="num" placeholder="Valor"><input id="xf" type="number" style="width:90px" placeholder="Faltam"><button class="btn" onclick="if(g('xn'))A('pc',{n:g('xn'),v:+g('xv'),f:+g('xf')||1,pg:''})">＋</button></div></div>`;
 return h}
 function pontV(){return `<div class="card add">${inp('tn','Qual conta?')}<input id="tv" type="number" class="num" placeholder="Valor"><button class="btn" onclick="if(g('tn'))A('pt',{n:g('tn'),v:+g('tv'),ok:false})">＋ Adicionar</button></div><div class="card">${S.pt.map(x=>`<div class="row ${x.ok?'done':''}"><input type="checkbox" ${x.ok?'checked':''} onchange="U('pt',${x.id},'ok',this.checked)"><span class="t">${esc(x.n)}</span><input class="num" type="number" value="${x.v}" onchange="U('pt',${x.id},'v',+this.value)"><button class="x" onclick="D('pt',${x.id})">🗑</button></div>`).join('')||'<div class="empty">Nenhuma dívida pontual. 🌈</div>'}</div>`}
-function entV(){const t=tt(S.en,e=>e.v*(e.q==null?1:e.q));return `<div class="card"><b>💵 Total por mês: ${m$(t)}</b></div><div class="card">${S.en.map(e=>`<div class="row"><span class="t"><b>${esc(e.n)}</b>${e.q!=null?'<br><small>valor por vez × vezes no mês</small>':''}</span><input class="num" type="number" value="${e.v}" onchange="U('en',${e.id},'v',+this.value)">${e.q!=null?`✕<input class="num" style="width:70px" type="number" value="${e.q}" onchange="U('en',${e.id},'q',+this.value)">`:''}<button class="x" onclick="D('en',${e.id})">🗑</button></div>`).join('')}</div><div class="card add">${inp('ann','Nova entrada')}<input id="avl" type="number" class="num" placeholder="Valor"><input id="aqt" type="number" style="width:90px" placeholder="Vezes"><button class="btn" onclick="if(g('ann'))A('en',Object.assign({n:g('ann'),v:+g('avl')},g('aqt')?{q:+g('aqt')}:{}))">＋ Entrada</button></div>`}
+function entV(){const t=tt(S.en,e=>e.v*(e.q==null?1:e.q));return `<div class="card"><b>💵 Total por mês: ${m$(t)}</b></div><div class="card">${S.en.map(e=>e.auto?`<div class="row"><span class="t"><b>${esc(e.n)}</b><br><small>🔗 automático · vem do Financeiro da Quadra</small></span><span class="tag">${m$(e.v)}</span><button class="mini" onclick="go2('qd','fin')">Ver</button></div>`:`<div class="row"><span class="t"><b>${esc(e.n)}</b>${e.q!=null?'<br><small>valor por vez × vezes no mês</small>':''}</span><input class="num" type="number" value="${e.v}" onchange="U('en',${e.id},'v',+this.value)">${e.q!=null?`✕<input class="num" style="width:70px" type="number" value="${e.q}" onchange="U('en',${e.id},'q',+this.value)">`:''}<button class="x" onclick="D('en',${e.id})">🗑</button></div>`).join('')}</div><div class="card add">${inp('ann','Nova entrada')}<input id="avl" type="number" class="num" placeholder="Valor"><input id="aqt" type="number" style="width:90px" placeholder="Vezes"><button class="btn" onclick="if(g('ann'))A('en',Object.assign({n:g('ann'),v:+g('avl')},g('aqt')?{q:+g('aqt')}:{}))">＋ Entrada</button></div>`}
 function exportar(){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(S)],{type:'application/json'}));a.download='backup-minha-vida-'+today()+'.json';a.click()}
 function importar(){const i=document.createElement('input');i.type='file';i.accept='.json';i.onchange=()=>{const f=i.files[0];if(!f)return;f.text().then(t=>{try{const o=JSON.parse(t);if(!confirm('Substituir tudo pelo backup?'))return;S=Object.assign(seed(),o);if(window.sharedPend&&window.fbPend)S.pend.forEach(p=>window.fbPend.set(p));save();render()}catch(e){alert('Arquivo inválido')}})};i.click()}
 const MSGS=['🔥 Mandou bem!','✅ Mais uma resolvida!','🚀 Tá voando!','💪 Isso aí!','🎯 Na mosca!','⚡ Sem parar!'];
@@ -257,6 +262,7 @@ if(S.comp&&S.comp.length&&!S.cins.length){S.cins=S.comp.map(x=>({id:x.id,t:x.n,d
 if(S.tasks&&S.tasks.length&&!S.lpen.length){S.lpen=S.tasks.map(x=>({id:x.id,t:x.t,d:x.d||'',ok:x.s===2}));S.tasks=[]}}
 if(!S.v5){S.v5=true;ch=true;if(S.merc&&S.merc.length&&!S.mkt.length){S.mkt=S.merc.map(x=>({id:x.id,t:x.t}));S.merc=[]}}
 if(!S.v6){S.v6=true;ch=true;if(!S.en.some(e=>/marcelo/i.test(e.n)))S.en.push({id:uid(),n:'Contrato Marcelo Quorve',v:1000})}
+if(!S.v7){S.v7=true;ch=true;const e=S.en.find(x=>/^quadra/i.test(x.n));if(e)e.auto='quadra';else S.en.unshift({id:uid(),n:'Quadra (minha parte)',v:0,auto:'quadra'})}
 return ch}
 function addChk(col,dt){const t=g('ck');if(!t)return;A(col,{t,d:dt?g('ckd'):'',ok:false})}
 function chk(col,ph,dt){const P=S[col].slice().sort(sortT),T=today(),o=P.filter(p=>!p.ok),f=P.filter(p=>p.ok),ac=`addChk('${col}',${dt})`;
@@ -291,10 +297,11 @@ const hj=po.filter(p=>p.urg||(p.d&&p.d<=T)).sort(sortU),gh=[],ph=pp.filter(p=>p.
 h+=`<div class="sec">Para hoje, atrasados e urgentes</div><div class="card">${ah.map(x=>`<div class="row"><span class="t">📅 ${esc(x.label)}</span><span class="tag">${x.time||'hoje'}</span></div>`).join('')}${gh.map(x=>`<div class="row"><span class="t">🎬 ${esc(x.label)}</span><span class="tag">${x.time||'hoje'}</span></div>`).join('')}${ph.map(p=>`<div class="row"><span class="t">📝 ${esc(p.t)}</span><span class="tag ${p.d<T?'late':''}">📅 ${fd(p.d)}</span></div>`).join('')}${hj.map(p=>`<div class="row ${p.urg?'urg':''}"><span class="t">📣 ${esc(p.c)}: ${esc(p.t)} <small>(${esc(rl(p).join(', '))})</small></span>${p.urg?'<span class="tag hot">🔥 URGENTE</span>':''}${p.d?`<span class="tag ${p.d<T?'late':''}">📅 ${fd(p.d)}</span>`:''}</div>`).join('')}${ah.length+gh.length+ph.length+hj.length?'':'<div class="empty">Nada urgente. Respira! 🌈</div>'}</div>`;return h}
 const SHN={qd:'Quadra',pes:'Dinheiro',cha:'Mr.Matte'};
 const nav=k=>k==='home'?'':`<div class="topnav"><button class="back" onclick="go('home')">← Início</button><div class="pills">${Object.entries(CO).filter(([i])=>i!=='home').map(([i,v])=>`<button class="pill ${i===k?'on':''}" style="--c:var(${v.c})${i==='qd'?';--on:#0a0a0a':''}" onclick="go('${i}')">${v.e} ${SHN[i]||v.n}</button>`).join('')}</div></div>`;
-function render(){const y=scrollY,k=tab;let body;
+function render(){syncAuto();const ae=document.activeElement,ak=ae&&ae.dataset&&ae.dataset.lk,av=ak?ae.value:'',as=ak?ae.selectionStart:0;const y=scrollY,k=tab;let body;
 if(k==='home')body=home();else{const s=sub[k];const V={cli:cliV,fin:finV,pen:pendV,est:estV,ev:evV,cins:()=>chk('cins','Insumo para comprar',0),ceq:()=>chk('ceq','Equipamento para comprar',0),lpen:()=>chk('lpen','O que precisa ser feito?',1),lcomp:()=>chk('lcomp','O que comprar?',0),mes:mesV,pont:pontV,ent:entV};
 body=`<h1 style="${k==='qd'?'':`color:var(${CO[k].c})`}">${CO[k].e} ${CO[k].n}</h1>${k==='qd'?'<a class="tag" href="equipe.html" target="_blank" style="display:inline-block;margin-bottom:8px">🎬 Gravações e entregas: abrir a página da equipe</a>':''}`+(SUBS[k]?`<div class="sub">${SUBS[k].map(([i,n])=>`<button class="mini ${s===i?'sel':''}" onclick="sb('${i}')">${n}</button>`).join('')}</div>${V[s]()}`:(k==='pp'?chk('pp','O que preciso resolver?',1):k==='merc'?mercV():agV()))}
-$('#app').innerHTML=`<div style="--c:var(${CO[k].c});--on:${k==='qd'?'#0a0a0a':'#fff'}"><div class="brand"><img src="${LOGO}" alt=""><b>VIDA DO LEO</b></div><div class="sync" id="sync">${syncTxt}</div>${nav(k)}${body}<div class="sync"><button class="mini" onclick="exportar()">⬇ Backup</button> <button class="mini" onclick="importar()">⬆ Restaurar</button></div></div>`;scrollTo(0,y)}
+$('#app').innerHTML=`<div style="--c:var(${CO[k].c});--on:${k==='qd'?'#0a0a0a':'#fff'}"><div class="brand"><img src="${LOGO}" alt=""><b>VIDA DO LEO</b></div><div class="sync" id="sync">${syncTxt}</div>${nav(k)}${body}<div class="sync"><button class="mini" onclick="exportar()">⬇ Backup</button> <button class="mini" onclick="importar()">⬆ Restaurar</button></div></div>`;scrollTo(0,y);if(ak){const n=document.querySelector('input[data-lk="'+ak+'"]');if(n){n.value=av;n.focus({preventScroll:true});try{n.setSelectionRange(as,as)}catch(e){}}}
+if(lkId&&Date.now()-lkT<2500){const n=document.querySelector('input[data-lk="'+lkId+'"]');if(n){if(String(ak)!==String(lkId))n.scrollIntoView({block:'center',behavior:'smooth'});n.classList.add('lkf');n.focus({preventScroll:true})}}else if(lkId)lkId=0;}
 /* ===== JOHN: comandos por voz (Siri/Atalhos) e por texto ===== */
 const nrm=s=>String(s||'').normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase();
 const tkz=s=>String(s||'').trim().split(/\s+/).map(w=>({o:w,n:nrm(w).replace(/[^a-z0-9:/.,$]/g,'').replace(/^[.,]+|[.,]+$/g,'')})).filter(t=>t.n);
@@ -478,7 +485,7 @@ const lst=(A,emp,max)=>{max=max||15;return A.length?'<ul>'+A.slice(0,max).map(it
 function apl(k,it,x){const s=it.s,X=L(it);if(!X)return say('Não achei mais esse item 🤔');const old=snap(X),un=m=>undoA(()=>{restore(it,old);say(m||'↩ Desfeito.')});
 if(k==='done'){if(isDone(s,X))return say('Essa já estava '+(s.pay?'paga':'resolvida')+' ✅<br>'+dsc(fresh(it)));
 upd(it,s.pay?(s.k==='fx'?{pg:ym()}:{f:Math.max(0,X.f-1),pg:ym()}):{ok:true});celebrate(null,s.pay?'💳 Pago!':null);
-return say((s.pay?'💳 Marquei como pago:':'✅ Resolvida:')+'<br>'+dsc(fresh(it)),[un('↩ Voltou para abertas.')])}
+return say((s.pay?'💳 Marquei como pago:':'✅ Resolvida:')+'<br>'+dsc(fresh(it)),(s.k==='pend'?[{l:'🔗 Colar link do entregável',s:1,f:()=>{adShow(false);lkId=X.id;go2('qd','pen')}}]:[]).concat([un('↩ Voltou para abertas.')]))}
 if(k==='reopen'){upd(it,s.pay?(s.k==='fx'?{pg:''}:{f:X.f+1,pg:''}):{ok:false});return say('↩ Reabri:<br>'+dsc(fresh(it)),[un('Ok, voltou ao estado anterior.')])}
 if(k==='urg'||k==='unurg'){const v=k==='urg';upd(it,{urg:v});return say((v?'🔥 Marquei como urgente:':'😌 Tirei a urgência:')+'<br>'+dsc(fresh(it)),[un()])}
 if(k==='date'){if(s.ag){upd(it,{date:x.d||X.date,time:x.t||X.time||''})}else if(s.d)upd(it,{d:x.d});else return say('Esse item não tem prazo 🤷');
