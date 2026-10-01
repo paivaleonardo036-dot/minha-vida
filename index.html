@@ -63,6 +63,16 @@ input[type=checkbox]{width:28px;height:28px;accent-color:var(--c)}
 @media (prefers-reduced-motion:reduce){.pf{display:none}}
 .num{width:110px}small{color:var(--mut)}
 [hidden]{display:none!important}
+details.ms{position:relative}
+details.ms>summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:6px;background:var(--bg);border:2px solid var(--line);border-radius:14px;padding:10px;color:var(--ink);white-space:nowrap;max-width:230px;margin:0;font-size:inherit}
+details.ms>summary .mt{overflow:hidden;text-overflow:ellipsis}
+details.ms>summary::-webkit-details-marker{display:none}
+details.ms>summary::after{content:"▾";color:var(--mut);margin-left:auto;padding-left:8px}
+details.ms[open]>summary{border-color:var(--c,var(--home))}
+.ml{position:absolute;z-index:30;top:calc(100% + 6px);left:0;min-width:200px;max-width:calc(100vw - 28px);background:var(--card);border:2px solid var(--line);border-radius:16px;padding:6px;box-shadow:0 14px 36px rgba(0,0,0,.25)}
+.ml label{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:10px;cursor:pointer}
+.ml label:hover{background:var(--bg)}
+.ml input{width:24px;height:24px}
 #app{padding-bottom:110px}
 .adf,.adp{font-family:Inter,-apple-system,"SF Pro Text","Segoe UI",system-ui,sans-serif;font-size:15px;line-height:1.45;color:#f4f4f5}
 .adf *,.adp *{box-sizing:border-box}
@@ -167,7 +177,11 @@ return h+`<div class="card"><b>${sobra>=0?'🎉':'⚠️'} Operação (${m$(tot[
 function shareBar(){const ok=window.sharedPend&&window.fbPend;return `<div class="card" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><span class="t">${ok?'✅ Ligadas à equipe: todos veem estas demandas':'⚠️ Ainda não ligadas à equipe'}</span><button class="mini" onclick="if(window.fbForce)fbForce();else alert('Entre com seu login primeiro.')">${ok?'🔄 Reenviar tudo':'📤 Enviar para a equipe'}</button></div>`}
 const rl=p=>Array.isArray(p.r)?p.r:(p.r?[p.r]:[]);
 const okU=u=>/^https?:\/\//i.test(u||'');
-const chips=(nm,sel)=>`<div class="chips">${R.map(r=>`<label class="chip"><input type="checkbox" name="${nm}" value="${r}" ${sel.includes(r)?'checked':''}> ${r}</label>`).join('')}</div>`;
+const MS0='Eu';
+const chips=(nm,sel)=>`<details class="ms" ontoggle="msPos(this)"><summary>👤 <span class="mt">${esc(sel.length?sel.join(', '):MS0)}</span></summary><div class="ml">${R.map(r=>`<label><input type="checkbox" name="${nm}" value="${r}" ${sel.includes(r)?'checked':''} onchange="msUp(this)"> ${r}</label>`).join('')}</div></details>`;
+function msUp(el){const d=el.closest('details'),a=[...d.querySelectorAll('input:checked')].map(x=>x.value);d.querySelector('.mt').textContent=a.length?a.join(', '):MS0}
+function msPos(d){const l=d.querySelector('.ml');if(!d.open)return;l.style.left='0';l.style.right='auto';const r=l.getBoundingClientRect();if(r.right>innerWidth-8){l.style.left='auto';l.style.right='0'}}
+document.addEventListener('click',e=>document.querySelectorAll('details.ms[open]').forEach(d=>{if(!d.contains(e.target))d.open=false}));
 const picked=nm=>{const a=[...document.querySelectorAll(`input[name=${nm}]:checked`)].map(x=>x.value);return a.length?a:['Eu']};
 let editId=0;
 function addP(){if(!g('pt'))return;A('pend',{c:$('#pc').value,t:g('pt'),d:$('#pd').value,r:picked('rs'),urg:$('#pu').checked,ok:false})}
