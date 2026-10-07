@@ -159,7 +159,7 @@ function cloudPush(){if(window.fbSave){setSync('⏳ Salvando…');window.fbSave(
 function quadraMine(){return S.cli.filter(c=>c.g!=='sub'&&!c.i).reduce((a,c)=>a+part(c).Eu,0)}
 function lavM(M){const e=S.len.filter(x=>(x.d||'').startsWith(M)).reduce((a,x)=>a+(+x.v||0),0),f=S.lfx.reduce((a,x)=>a+(+x.v||0),0),p=S.lpt.filter(x=>(x.d||'').startsWith(M)).reduce((a,x)=>a+(+x.v||0),0);return{e,f,p,r:e-f,l:e-f-p}}
 function lavMine(){return Math.round(lavM(new Date().toLocaleDateString('sv-SE').slice(0,7)).r*100)/100}
-function syncAuto(){const q=Math.round(quadraMine()*100)/100,l=lavMine();let ch=false;S.en.forEach(e=>{const v=e.auto==='quadra'?q:e.auto==='lav'?l:null;if(v!=null&&e.v!==v){e.v=v;ch=true}});return ch}
+function syncAuto(){const q=Math.round(quadraMine()*100)/100,l=lavMine();let ch=false;S.en.forEach(e=>{const v=e.auto==='quadra'?q:null;if(v!=null&&e.v!==v){e.v=v;ch=true}});return ch}
 function save(){syncAuto();LAT=Date.now();stash();cloudPush()}
 window.appApply=(json,at)=>{try{const keep=window.sharedPend?S.pend:null;S=Object.assign(seed(),JSON.parse(json));if(keep)S.pend=keep;LAT=+at||0;if(mig())save();else stash();render()}catch(e){}};
 window.appLocal=()=>({at:LAT,json:snapJ()});
@@ -267,6 +267,7 @@ if(!S.v5){S.v5=true;ch=true;if(S.merc&&S.merc.length&&!S.mkt.length){S.mkt=S.mer
 if(!S.v6){S.v6=true;ch=true;if(!S.en.some(e=>/marcelo/i.test(e.n)))S.en.push({id:uid(),n:'Contrato Marcelo Quorve',v:1000})}
 if(!S.v7){S.v7=true;ch=true;const e=S.en.find(x=>/^quadra/i.test(x.n));if(e)e.auto='quadra';else S.en.unshift({id:uid(),n:'Quadra (minha parte)',v:0,auto:'quadra'})}
 if(!S.v8){S.v8=true;ch=true;const e=S.en.find(x=>!x.auto&&/^lavanderia/i.test(x.n));if(e){e.auto='lav';e.n='Lavanderia (entradas − custos fixos)'}else if(!S.en.some(x=>x.auto==='lav'))S.en.push({id:uid(),n:'Lavanderia (entradas − custos fixos)',v:0,auto:'lav'})}
+if(!S.v9){S.v9=true;ch=true;const L=S.en.filter(x=>x.auto==='lav');if(L.length){L.forEach(x=>{delete x.auto;x.n='Lavanderia';x.v=2500});S.en=S.en.filter(x=>x===L[0]||!L.includes(x))}else if(!S.en.some(x=>/^lavanderia/i.test(x.n)))S.en.push({id:uid(),n:'Lavanderia',v:2500})}
 return ch}
 function addChk(col,dt){const t=g('ck');if(!t)return;A(col,{t,d:dt?g('ckd'):'',ok:false})}
 function chk(col,ph,dt){const P=S[col].slice().sort(sortT),T=today(),o=P.filter(p=>!p.ok),f=P.filter(p=>p.ok),ac=`addChk('${col}',${dt})`;
