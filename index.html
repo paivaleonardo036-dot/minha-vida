@@ -236,20 +236,37 @@ function compV(){return `<div class="card add">${inp('sn','O que comprar?','styl
 /* MEU DINHEIRO */
 const ym=()=>today().slice(0,7),tt=(a,f)=>a.reduce((s,x)=>s+f(x),0);
 function payPc(id,ck){if(ck)celebrate(window.event,'💳 Parcela paga!');const x=S.pc.find(a=>a.id===id);if(ck){x.f=Math.max(0,x.f-1);x.pg=ym()}else{x.f++;x.pg=''}save();render()}
-function calcPes(){const M=ym(),fx=S.fx,pc=S.pc.filter(x=>x.f>0||x.pg===M);
-const ent=tt(S.en,e=>e.v*(e.q==null?1:e.q)),cont=tt(fx,x=>x.v)+tt(pc,x=>x.v),pago=tt(fx.filter(x=>x.pg===M),x=>x.v)+tt(pc.filter(x=>x.pg===M),x=>x.v),pont=tt(S.pt.filter(x=>!x.ok),x=>x.v);
+/* gastos aos poucos (mercado, gasolina...) */
+const GRX=/mercado|comida|gasolina|combust|\bmac\b|mc ?donald/;
+function grMig(){if(S.grMig)return;S.grMig=1;(S.fx||[]).forEach(x=>{if(GRX.test(nrm(x.n)))x.gr=true})}
+const gsL=(x,M)=>((x.gs||{})[M||ym()])||[],gsT=(x,M)=>tt(gsL(x,M),a=>+a.v||0);
+const fxOk=(x,M)=>x.gr?gsT(x,M)>=(+x.v||0):x.pg===M;
+function gsAdd(id,v,ev){v=+v;if(!v)return;const x=S.fx.find(a=>a.id===id),M=ym();x.gs=Object.assign({},x.gs);x.gs[M]=gsL(x,M).concat({v,d:today()});const t=gsT(x,M);
+celebrate(ev||window.event,t>x.v?'⚠️ Passou do previsto em '+m$(t-x.v):'✅ Lançado! Resta '+m$(x.v-t));save();render()}
+function gsDel(id,i){const x=S.fx.find(a=>a.id===id),M=ym(),l=gsL(x,M).slice();l.splice(i,1);x.gs=Object.assign({},x.gs,{[M]:l});save();render()}
+function grTog(id){const x=S.fx.find(a=>a.id===id);x.gr=!x.gr;save();render()}
+function calcPes(){const M=ym(),fx=S.fx,pc=S.pc.filter(x=>x.f>0||x.pg===M);grMig();
+const fv=x=>x.gr?Math.max(+x.v||0,gsT(x,M)):+x.v||0,fp=x=>x.gr?gsT(x,M):(x.pg===M?+x.v||0:0);
+const ent=tt(S.en,e=>e.v*(e.q==null?1:e.q)),cont=tt(fx,fv)+tt(pc,x=>x.v),pago=tt(fx,fp)+tt(pc.filter(x=>x.pg===M),x=>x.v),pont=tt(S.pt.filter(x=>!x.ok),x=>x.v);
 return {M,pc,ent,cont,pago,pont,sobra:ent-cont-pont,falta:cont-pago+pont}}
 function venc(x,M){if(!x.dia)return '<small>sem vencimento</small>';const last=new Date(+M.slice(0,4),+M.slice(5),0).getDate(),dd=Math.min(x.dia,last),diff=dd-(+today().slice(8));
 if(x.pg===M)return `<small>✔ pago · venc. dia ${dd}</small>`;
 return diff<0?`<span class="tag late">venceu dia ${dd}</span>`:diff===0?'<span class="tag hot">vence HOJE</span>':diff<=3?`<span class="tag hot">vence em ${diff} dia(s) · dia ${dd}</span>`:`<small>vence dia ${dd}</small>`}
 function billEvents(d){return billEvents0(d).concat((S.lfx||[]).filter(x=>x.dia).map(x=>{const y=d.getFullYear(),m=d.getMonth(),last=new Date(y,m+1,0).getDate(),ms=y+'-'+String(m+1).padStart(2,'0');return{date:ms+'-'+String(Math.min(+x.dia,last)).padStart(2,'0'),label:'🧺 '+x.n+' · '+m$(x.v)+((x.pm||[]).includes(ms)?' ✔':''),ro:true}}))}
 function billEvents0(d){const y=d.getFullYear(),m=d.getMonth(),last=new Date(y,m+1,0).getDate(),ms=y+'-'+String(m+1).padStart(2,'0');
-return S.fx.filter(x=>x.dia).map(x=>({date:ms+'-'+String(Math.min(+x.dia,last)).padStart(2,'0'),label:'💸 '+x.n+' · '+m$(x.v)+(ms===ym()&&x.pg===ms?' ✔':''),ro:true}))}
+return S.fx.filter(x=>x.dia&&!x.gr).map(x=>({date:ms+'-'+String(Math.min(+x.dia,last)).padStart(2,'0'),label:'💸 '+x.n+' · '+m$(x.v)+(ms===ym()&&x.pg===ms?' ✔':''),ro:true}))}
 function mesV(){const c=calcPes(),M=c.M,q=S.pc.filter(x=>x.f<=0&&x.pg!==M);
 let h=`<div class="card"><b>${MES[+M.slice(5)-1]} ${M.slice(0,4)}</b> <small>· os checks zeram sozinhos todo dia 1º</small><div class="kpi" style="margin-top:8px"><div>💵 Entra<b>${m$(c.ent)}</b></div><div>🧾 Contas<b>${m$(c.cont)}</b></div><div>✅ Já paguei<b>${m$(c.pago)}</b></div><div>⏳ Falta pagar<b>${m$(c.falta)}</b></div><div>${c.sobra>=0?'🎉':'⚠️'} Sobra<b style="color:${c.sobra<0?'#e5484d':'inherit'}">${m$(c.sobra)}</b></div></div></div>`;
-h+=`<h2>🏠 Contas fixas</h2><div class="card">${S.fx.slice().sort((a,b)=>(a.dia||99)-(b.dia||99)).map(x=>`<div class="row ${x.pg===M?'done':''}"><input type="checkbox" ${x.pg===M?'checked':''} onchange="U('fx',${x.id},'pg',this.checked?ym():'')"><span class="t">${esc(x.n)}<br>${venc(x,M)}</span><input class="num" type="number" value="${x.v}" onchange="U('fx',${x.id},'v',+this.value)"><input class="num" style="width:64px" type="number" min="1" max="31" placeholder="dia" value="${x.dia||''}" onchange="U('fx',${x.id},'dia',+this.value)"><button class="x" onclick="D('fx',${x.id})">🗑</button></div>`).join('')}
-<div class="total">🧾 Total das contas fixas: <b>${m$(tt(S.fx,x=>x.v))}</b></div>
+const GR=S.fx.filter(x=>x.gr),FX=S.fx.filter(x=>!x.gr);
+h+=`<h2>🏠 Contas fixas</h2><div class="card">${FX.slice().sort((a,b)=>(a.dia||99)-(b.dia||99)).map(x=>`<div class="row ${x.pg===M?'done':''}"><input type="checkbox" ${x.pg===M?'checked':''} onchange="U('fx',${x.id},'pg',this.checked?ym():'')"><span class="t">${esc(x.n)}<br>${venc(x,M)}</span><input class="num" type="number" value="${x.v}" onchange="U('fx',${x.id},'v',+this.value)"><input class="num" style="width:64px" type="number" min="1" max="31" placeholder="dia" value="${x.dia||''}" onchange="U('fx',${x.id},'dia',+this.value)"><button class="mini" title="Virar gasto aos poucos" onclick="grTog(${x.id})">🔁</button><button class="x" onclick="D('fx',${x.id})">🗑</button></div>`).join('')||'<div class="empty">Nenhuma conta fixa.</div>'}
+<div class="total">🧾 Contas fixas: <b>${m$(tt(FX,x=>x.v))}</b>${GR.length?` · com os gastos aos poucos: <b>${m$(tt(S.fx,x=>x.v))}</b>`:''}</div>
 <div class="add" style="margin-top:8px">${inp('fnm','Nova conta fixa')}<input id="fvl" type="number" class="num" placeholder="Valor"><input id="fdi" type="number" min="1" max="31" style="width:84px" placeholder="Dia venc."><button class="btn" onclick="if(g('fnm'))A('fx',{n:g('fnm'),v:+g('fvl'),dia:+g('fdi')||0,pg:''})">＋</button></div></div>`;
+h+=`<h2>🔄 Gastos aos poucos</h2><div class="card"><small>Mercado, gasolina, Mac… Lance cada gasto quando acontecer. O valor previsto continua contando nas contas do mês.</small>${GR.map(x=>{const L=gsL(x,M),t=gsT(x,M),r=x.v-t,pct=x.v?Math.min(100,t/x.v*100):0;
+return `<div class="row ${t===x.v&&x.v?'done':''}" style="flex-wrap:wrap"><span class="t"><b>${esc(x.n)}</b><br><small>${m$(t)} de ${m$(x.v)} · ${r>=0?'resta '+m$(r):'<b style="color:#e5484d">passou '+m$(-r)+'</b>'}</small></span><input class="num" type="number" title="Previsto no mês" value="${x.v}" onchange="U('fx',${x.id},'v',+this.value)"><button class="mini" title="Voltar a ser conta com check" onclick="grTog(${x.id})">🔁</button><button class="x" onclick="D('fx',${x.id})">🗑</button>
+<div style="flex-basis:100%"><div class="plbar" style="margin-top:4px"><i style="width:${pct}%;background:${r<0?'#e5484d':'var(--pes)'}"></i></div>
+<div class="add" style="margin-top:8px"><input id="gs${x.id}" type="number" inputmode="decimal" class="num" placeholder="Gastei R$" onkeydown="if(event.key==='Enter')gsAdd(${x.id},this.value,event)"><button class="btn" onclick="gsAdd(${x.id},g('gs${x.id}'),event)">＋ Lançar</button></div>
+${L.length?`<div style="margin-top:6px">${L.map((a,i)=>`<span class="tag" style="margin:2px">${a.d.slice(8)}/${a.d.slice(5,7)} · ${m$(a.v)} <a href="#" onclick="gsDel(${x.id},${i});return false" style="text-decoration:none">✕</a></span>`).join('')}</div>`:''}</div></div>`}).join('')||'<div class="empty">Nenhum ainda. Toque em 🔁 numa conta fixa para ela virar gasto aos poucos.</div>'}
+${GR.length?`<div class="total">🔄 Gasto até agora: <b>${m$(tt(GR,x=>gsT(x,M)))}</b> de <b>${m$(tt(GR,x=>x.v))}</b> previstos</div>`:''}</div>`;
 h+=`<h2>💳 Parcelas</h2><div class="card">${c.pc.map(x=>`<div class="row ${x.pg===M?'done':''}"><input type="checkbox" ${x.pg===M?'checked':''} onchange="payPc(${x.id},this.checked)"><span class="t">${esc(x.n)}<br><small>${x.f>0?'faltam '+x.f:'🎉 última paga!'}</small></span><input class="num" type="number" value="${x.v}" onchange="U('pc',${x.id},'v',+this.value)"><button class="x" onclick="D('pc',${x.id})">🗑</button></div>`).join('')||'<div class="empty">Sem parcelas.</div>'}
 ${q.length?`<small>🎉 Quitadas: ${q.map(x=>esc(x.n)).join(', ')}</small>`:''}
 <div class="total">💳 Parcelas deste mês: <b>${m$(tt(c.pc,x=>x.v))}</b><br>📉 Ainda devo no total: <b>${m$(tt(S.pc,x=>x.v*x.f))}</b> <small>(${tt(S.pc,x=>x.f)} parcelas restantes)</small></div>
@@ -440,7 +457,7 @@ const it=jItems(T);if(!it.length)return null;
 it.forEach(t=>{const x={id:uid(),t};if(k!=='mkt'&&k!=='fei'){x.d='';x.ok=false}S[k].push(x);out.ids.push(x.id)});save();render();
 out.msg=`${k==='mkt'?'🛒':k==='fei'?'🥬':'🧾'} ${KN[k]}: ${it.join(', ')}`;return out}
 function jDone(q,out){const w=nrm(q).split(/[^a-z0-9]+/).filter(x=>x.length>=3&&!['para','pra','com','das','dos','que','uma'].includes(x));if(!w.length)return null;
-let best=null,bs=0;[['pend',p=>p.c+' '+p.t],['pp',p=>p.t],['lpen',p=>p.t],['lcomp',p=>p.t],['cins',p=>p.t],['ceq',p=>p.t],['pt',p=>p.n],['fx',p=>p.n],['pc',p=>p.n]].forEach(([k,f])=>S[k].filter(x=>k==='fx'?x.pg!==ym():k==='pc'?(x.f>0&&x.pg!==ym()):!x.ok).forEach(x=>{const hs=nrm(f(x)),s=w.filter(a=>hs.includes(a)).length/w.length;if(s>bs){bs=s;best={k,x}}}));
+let best=null,bs=0;[['pend',p=>p.c+' '+p.t],['pp',p=>p.t],['lpen',p=>p.t],['lcomp',p=>p.t],['cins',p=>p.t],['ceq',p=>p.t],['pt',p=>p.n],['fx',p=>p.n],['pc',p=>p.n]].forEach(([k,f])=>S[k].filter(x=>k==='fx'?(!x.gr&&x.pg!==ym()):k==='pc'?(x.f>0&&x.pg!==ym()):!x.ok).forEach(x=>{const hs=nrm(f(x)),s=w.filter(a=>hs.includes(a)).length/w.length;if(s>bs){bs=s;best={k,x}}}));
 if(!best||bs<.5)return Object.assign(out,{k:'none',msg:`🤔 Não achei nada aberto parecido com “${q}”.`});
 const {k,x}=best;if(k==='fx')x.pg=ym();else if(k==='pc'){x.f=Math.max(0,x.f-1);x.pg=ym()}else x.ok=true;if(k==='pend'&&SHR())window.fbPend.set(x);else save();out.k=k;out.ids=[x.id];out.done=true;out.msg=`✅ ${k==='fx'||k==='pc'?'Marquei como pago':'Marquei como feito'}: ${k==='pend'?x.c+': ':''}${x.t||x.n}`;return out}
 function jUndo(){const r=JR;if(!r||!r.ids.length)return;const col=r.k;
@@ -498,7 +515,7 @@ const SRC=[
 {k:'fei',n:'Feira',t:x=>x.t},
 {k:'agp',n:'Agenda',t:x=>x.label,ag:1}];
 const isDone=(s,x)=>s.pay?x.pg===ym():!!x.ok;
-const isOpen=(s,x)=>s.pay?(s.k==='fx'?x.pg!==ym():(x.f>0&&x.pg!==ym())):(s.ok?!x.ok:false);
+const isOpen=(s,x)=>s.pay?(s.k==='fx'?(!x.gr&&x.pg!==ym()):(x.f>0&&x.pg!==ym())):(s.ok?!x.ok:false);
 const items=f=>{const o=[];SRC.forEach(s=>(S[s.k]||[]).forEach(x=>{if(!f||f(s,x))o.push({s,x})}));return o};
 const open=f=>items((s,x)=>isOpen(s,x)&&(!f||f(s,x)));
 const L=it=>S[it.s.k].find(a=>a.id===it.x.id);
@@ -670,7 +687,10 @@ if(/^(mud|alter|adi(a|ar|e)\b|prorrog|empurr|troc|pass|transfer|repass|deleg)/.t
 return'john'}
 const NEEDP=['q','reopen','del','urg','unurg','edit','done'];
 const needs=raw=>{const o=strip(raw),k=kind(o);return k==='john'?jNeedsPend(o):NEEDP.includes(k)};
-function run(raw){const o=strip(raw);if(!o)return say('Oi! Em que posso ajudar? 🎩');const n=nrm(o).trim(),k=kind(o);
+function gastoCmd(n){if(!/^(gastei|abasteci|coloquei|botei|comprei|lanc\w*|paguei)\b/.test(n))return null;const mv=n.match(/(\d+(?:[.,]\d{1,2})?)/);if(!mv)return null;
+const x=(S.fx||[]).filter(a=>a.gr).find(a=>nrm(a.n).split(/\s+/).some(w=>w.length>2&&n.includes(w))||(/abastec|gasol|combust/.test(n)&&/gasol|combust/.test(nrm(a.n))));if(!x)return null;
+gsAdd(x.id,+mv[1].replace(',','.'),null);const t=gsT(x);return say(`✅ Lancei <b>${m$(+mv[1].replace(',','.'))}</b> em <b>${esc(x.n)}</b>.<br>${m$(t)} de ${m$(x.v)} · ${t<=x.v?'resta '+m$(x.v-t):'⚠️ passou '+m$(t-x.v)}`)}
+function run(raw){const o=strip(raw);if(!o)return say('Oi! Em que posso ajudar? 🎩');const n=nrm(o).trim(),k=kind(o);{const gx=gastoCmd(n);if(gx!==null)return gx}
 switch(k){
 case'help':return help();
 case'hi':return say('Olá! 🎩 Como posso ajudar? Toque em <b>❓ Ajuda</b> para ver exemplos.');
