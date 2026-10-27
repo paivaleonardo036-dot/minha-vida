@@ -237,8 +237,8 @@ function compV(){return `<div class="card add">${inp('sn','O que comprar?','styl
 const ym=()=>today().slice(0,7),tt=(a,f)=>a.reduce((s,x)=>s+f(x),0);
 function payPc(id,ck){if(ck)celebrate(window.event,'💳 Parcela paga!');const x=S.pc.find(a=>a.id===id);if(ck){x.f=Math.max(0,x.f-1);x.pg=ym()}else{x.f++;x.pg=''}save();render()}
 /* gastos aos poucos (mercado, gasolina...) */
-const GRX=/mercado|comida|gasolina|combust|\bmac\b|mc ?donald/;
-function grMig(){if(S.grMig)return;S.grMig=1;(S.fx||[]).forEach(x=>{if(GRX.test(nrm(x.n)))x.gr=true})}
+const GRX=/mercado|feira|comida|gasolina|combust|\bmac\b|mc ?donald|mequi/;
+function grMig(){const seen={};(S.fx||[]).forEach(x=>{if(seen[x.id])x.id=uid()+Math.floor(Math.random()*999);seen[x.id]=1});if(S.grMig)return;S.grMig=1;(S.fx||[]).forEach(x=>{if(GRX.test(nrm(x.n)))x.gr=true})}
 const gsL=(x,M)=>((x.gs||{})[M||ym()])||[],gsT=(x,M)=>tt(gsL(x,M),a=>+a.v||0);
 const fxOk=(x,M)=>x.gr?gsT(x,M)>=(+x.v||0):x.pg===M;
 function gsAdd(id,v,ev){v=+v;if(!v)return;const x=S.fx.find(a=>a.id===id),M=ym();x.gs=Object.assign({},x.gs);x.gs[M]=gsL(x,M).concat({v,d:today()});const t=gsT(x,M);
@@ -264,7 +264,7 @@ h+=`<h2>🏠 Contas fixas</h2><div class="card">${FX.slice().sort((a,b)=>(a.dia|
 h+=`<h2>🔄 Gastos aos poucos</h2><div class="card"><small>Mercado, gasolina, Mac… Lance cada gasto quando acontecer. O valor previsto continua contando nas contas do mês.</small>${GR.map(x=>{const L=gsL(x,M),t=gsT(x,M),r=x.v-t,pct=x.v?Math.min(100,t/x.v*100):0;
 return `<div class="row ${t===x.v&&x.v?'done':''}" style="flex-wrap:wrap"><span class="t"><b>${esc(x.n)}</b><br><small>${m$(t)} de ${m$(x.v)} · ${r>=0?'resta '+m$(r):'<b style="color:#e5484d">passou '+m$(-r)+'</b>'}</small></span><input class="num" type="number" title="Previsto no mês" value="${x.v}" onchange="U('fx',${x.id},'v',+this.value)"><button class="mini" title="Voltar a ser conta com check" onclick="grTog(${x.id})">🔁</button><button class="x" onclick="D('fx',${x.id})">🗑</button>
 <div style="flex-basis:100%"><div class="plbar" style="margin-top:4px"><i style="width:${pct}%;background:${r<0?'#e5484d':'var(--pes)'}"></i></div>
-<div class="add" style="margin-top:8px"><input id="gs${x.id}" type="number" inputmode="decimal" class="num" placeholder="Gastei R$" onkeydown="if(event.key==='Enter')gsAdd(${x.id},this.value,event)"><button class="btn" onclick="gsAdd(${x.id},g('gs${x.id}'),event)">＋ Lançar</button></div>
+<div class="add" style="margin-top:8px"><input type="number" inputmode="decimal" class="num" placeholder="Gastei R$" onkeydown="if(event.key==='Enter')gsAdd(${x.id},this.value,event)"><button class="btn" onclick="gsAdd(${x.id},this.previousElementSibling.value,event)">＋ Lançar</button></div>
 ${L.length?`<div style="margin-top:6px">${L.map((a,i)=>`<span class="tag" style="margin:2px">${a.d.slice(8)}/${a.d.slice(5,7)} · ${m$(a.v)} <a href="#" onclick="gsDel(${x.id},${i});return false" style="text-decoration:none">✕</a></span>`).join('')}</div>`:''}</div></div>`}).join('')||'<div class="empty">Nenhum ainda. Toque em 🔁 numa conta fixa para ela virar gasto aos poucos.</div>'}
 ${GR.length?`<div class="total">🔄 Gasto até agora: <b>${m$(tt(GR,x=>gsT(x,M)))}</b> de <b>${m$(tt(GR,x=>x.v))}</b> previstos</div>`:''}</div>`;
 h+=`<h2>💳 Parcelas</h2><div class="card">${c.pc.map(x=>`<div class="row ${x.pg===M?'done':''}"><input type="checkbox" ${x.pg===M?'checked':''} onchange="payPc(${x.id},this.checked)"><span class="t">${esc(x.n)}<br><small>${x.f>0?'faltam '+x.f:'🎉 última paga!'}</small></span><input class="num" type="number" value="${x.v}" onchange="U('pc',${x.id},'v',+this.value)"><button class="x" onclick="D('pc',${x.id})">🗑</button></div>`).join('')||'<div class="empty">Sem parcelas.</div>'}
